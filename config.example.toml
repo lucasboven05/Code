@@ -1,0 +1,40 @@
+# cp config.example.toml config.toml
+broker = "mt5"          # "ib" or "mt5"
+poll_seconds = 60
+
+[risk]
+risk_per_trade_pct = 0.5        # lose at most 0.5% of equity if the stop is hit
+max_daily_loss_pct = 2.0        # then flatten + halt until next trading day
+max_daily_loss_abs = 0          # optional hard cap in account currency
+atr_period = 14
+atr_stop_mult = 2.0             # stop = 2 x ATR  => size shrinks when volatility rises
+max_open_positions = 3
+max_position_notional_pct = 25
+max_consecutive_errors = 3      # then the KILL file is created automatically
+timezone = "Europe/London"      # defines "the trading day"
+
+[strategy]
+fast = 20
+slow = 50
+timeframe = "1h"
+allow_short = true
+
+[ib]
+port = 7497                     # TWS paper. IB Gateway paper = 4002. Live ports are refused.
+client_id = 17
+
+[mt5]
+login = 12345678               # your DEMO account number
+server = "YourBroker-Demo"
+# password: export MT5_PASSWORD=...   (never put it in this file)
+
+[[instruments]]                 # MT5: broker symbol name (e.g. EURUSD, XAUUSD)
+symbol = "EURUSD"
+
+# IB examples:
+# [[instruments]]
+# symbol = "AAPL"               # sec_type = "STK" by default
+# [[instruments]]
+# symbol = "EURUSD"
+# sec_type = "CASH"
+# exchange = "IDEALPRO"

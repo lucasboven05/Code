@@ -1,0 +1,5 @@
+# Interactive Brokers (official TWS API wrapper, maintained successor of ib_insync)
+ib_async>=1.0.3
+# MetaTrader 5 (Windows only; needs the MT5 terminal installed and logged in)
+MetaTrader5>=5.0.45; sys_platform == "win32"
+pytest>=8
