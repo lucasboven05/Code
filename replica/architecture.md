@@ -93,4 +93,4 @@ Tables: briefings, briefing_items, notification_prefs. Jobs: rebalance, briefing
 **M5 Fixes** after `/replica-entrepreneur`, then `/replica-test`, `/replica-diff`.
 
 ## Summary numbers
-20 tables, 21 API routes, 6 jobs, 5 milestones. Skipped by design: real brokerage, custody, advice, bank linking, KYC, payments.
+20 tables, 20 API route entries, 6 jobs, 5 milestones. Skipped by design: real brokerage, custody, advice, bank linking, KYC, payments.
