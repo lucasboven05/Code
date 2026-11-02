@@ -1,30 +1,30 @@
 feature,area,priority,original,clone,notes
-"Goal questionnaire (goals, risk, horizon)",onboarding,must,yes,no,seen: App Store/site
-Matched model ETF portfolio,portfolio,must,yes,no,seen; clone uses clearly-labelled sample portfolios
-Auto-invest: amount + recurring schedule,portfolio,must,yes,no,seen
-Automatic rebalancing,portfolio,should,yes,no,seen on site
-Fractional shares,portfolio,must,yes,no,seen (secondary source)
-"Home: balance, performance chart, holdings",portfolio,must,yes,no,inferred
-Stock profiles,research,must,yes,no,seen
-Investing Playlists: browse themed collections,playlists,must,yes,no,seen
-Playlist detail + invest,playlists,must,yes,no,inferred
-Playlist builder (custom direct index),playlists,should,yes,no,seen (TechCrunch)
-Share playlists / community feed,social,could,yes,no,seen; private clone = own playlists only
-Daily Briefing (news for holdings),research,should,yes,no,seen
-Goal Projections / Investing Potential,planning,must,yes,no,"seen; hypothetical, labelled"
-Yearly Goals,planning,should,yes,no,seen
-AI Allie chat (educational),ai,must,yes,no,seen
-AI Allie Recaps,ai,should,yes,no,seen
-Crypto access (simulated prices),assets,could,yes,no,seen; no custody
-Activity / history,portfolio,should,yes,no,inferred
-Membership + billing screen,account,could,yes,no,private use: show as informational only
-Notifications,account,could,yes,no,inferred
-"Settings, profile, security",account,should,yes,no,inferred
-Legal and disclosures pages,account,must,yes,no,seen
-Marketing landing page + savings calculator,web,could,yes,no,seen on site
-Real brokerage and custody,regulated,skip,yes,no,SKIP: needs licensed broker partner (DriveWealth in original)
-SEC-registered adviser services,regulated,skip,yes,no,SKIP: regulated
-Bank linking (Plaid),regulated,skip,yes,no,SKIP: simulated funding instead
-Crypto custody (Zero Hash),regulated,skip,yes,no,SKIP
-KYC / identity / tax docs,regulated,skip,yes,no,SKIP
-"Alinea brand, copy, logos, proprietary portfolios",content,skip,yes,no,SKIP: original content only
+"Goal questionnaire (goals, risk, horizon)",onboarding,must,yes,yes,"seen: App Store/site | BUILD: 5 steps, resumable, validated"
+Matched model ETF portfolio,portfolio,must,yes,yes,"seen; clone uses clearly-labelled sample portfolios | BUILD: 5 FICTIONAL sample portfolios; matching by risk, horizon, age"
+Auto-invest: amount + recurring schedule,portfolio,must,yes,yes,seen | BUILD: once/weekly/biweekly/monthly; runs on market days; idempotent
+Automatic rebalancing,portfolio,should,yes,yes,"seen on site | BUILD: weekly check, 3-point drift trigger, toggle in Settings"
+Fractional shares,portfolio,must,yes,yes,"seen (secondary source) | BUILD: 8 decimals, floored; leftover cents stay as cash"
+"Home: balance, performance chart, holdings",portfolio,must,yes,yes,inferred | BUILD: value replayed from order log; 1W-All; practice-start replay is an extension
+Stock profiles,research,must,yes,partial,"seen | BUILD: chart, holding, about, 1y range. No real stats or news"
+Investing Playlists: browse themed collections,playlists,must,yes,yes,"seen | BUILD: 5 built-in sample playlists, search, Mine tab"
+Playlist detail + invest,playlists,must,yes,yes,"inferred | BUILD: weights, simulated 3-month index, invest sheet"
+Playlist builder (custom direct index),playlists,should,yes,yes,"seen (TechCrunch) | BUILD: search, weights must total 100%, edit, delete"
+Share playlists / community feed,social,could,yes,partial,seen; private clone = own playlists only | BUILD: own playlists only; no sharing or feed (private clone)
+Daily Briefing (news for holdings),research,should,yes,partial,"seen | BUILD: built from simulated price moves, NOT real news"
+Goal Projections / Investing Potential,planning,must,yes,yes,"seen; hypothetical, labelled | BUILD: rate slider, monthly-needed, labelled hypothetical"
+Yearly Goals,planning,should,yes,yes,seen | BUILD: create/edit/delete
+AI Allie chat (educational),ai,must,yes,partial,seen | BUILD: scripted answers behind the real interface; no LLM yet
+AI Allie Recaps,ai,should,yes,partial,"seen | BUILD: on-demand button, scripted; not weekly/automatic"
+Crypto access (simulated prices),assets,could,yes,partial,seen; no custody | BUILD: two simulated coins list + playlist; no buy sheet of its own
+Activity / history,portfolio,should,yes,yes,inferred | BUILD: filters + paging
+Membership + billing screen,account,could,yes,partial,private use: show as informational only | BUILD: info card in Settings; no billing by design
+Notifications,account,could,yes,partial,inferred | BUILD: preferences saved; nothing is delivered
+"Settings, profile, security",account,should,yes,partial,"inferred | BUILD: profile, time zone, toggles, reset/delete. No security settings (no accounts yet)"
+Legal and disclosures pages,account,must,yes,yes,seen | BUILD: About and disclosures
+Marketing landing page + savings calculator,web,could,yes,no,seen on site | BUILD: not started
+Real brokerage and custody,regulated,skip,yes,skip,SKIP: needs licensed broker partner (DriveWealth in original)
+SEC-registered adviser services,regulated,skip,yes,skip,SKIP: regulated
+Bank linking (Plaid),regulated,skip,yes,skip,SKIP: simulated funding instead
+Crypto custody (Zero Hash),regulated,skip,yes,skip,SKIP
+KYC / identity / tax docs,regulated,skip,yes,skip,SKIP
+"Alinea brand, copy, logos, proprietary portfolios",content,skip,yes,skip,SKIP: original content only
