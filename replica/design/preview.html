@@ -1,0 +1,98 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Design sheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:var(--c-bg);color:var(--c-text);font:var(--fw-md) var(--fs-md)/var(--lh-md) var(--font-body);font-variant-numeric:tabular-nums}
+.wrap{max-width:var(--content-max);margin:0 auto;padding:var(--sp-4);display:flex;flex-direction:column;gap:var(--sp-6)}
+h1,h2{font-family:var(--font-display);margin:0}
+h1{font-size:var(--fs-xl);line-height:var(--lh-xl)} h2{font-size:var(--fs-xs);line-height:var(--lh-xs);text-transform:uppercase;letter-spacing:.1em;color:var(--c-text-muted);font-family:var(--font-body);font-weight:600}
+section{display:flex;flex-direction:column;gap:var(--sp-3)}
+.card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-4);box-shadow:var(--shadow-card);display:flex;flex-direction:column;gap:var(--sp-3)}
+.row{display:flex;gap:var(--sp-2);flex-wrap:wrap;align-items:center}
+button{font:600 var(--fs-sm)/1 var(--font-body);min-height:44px;padding:0 var(--sp-4);border-radius:var(--r-md);border:1px solid transparent;cursor:pointer;transition:background var(--dur-fast) var(--ease)}
+.pri{background:var(--c-accent);color:var(--c-on-accent)} .sec{background:var(--c-surface-2);color:var(--c-text)} .gho{background:transparent;color:var(--c-accent)} .dng{background:var(--c-danger);color:var(--c-surface)}
+.sm{min-height:36px} .lg{min-height:52px;width:100%}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--c-accent);outline-offset:2px}
+label{display:flex;flex-direction:column;gap:var(--sp-1);font-size:var(--fs-sm);font-weight:500}
+input[type=text]{font:var(--fw-md) var(--fs-md) var(--font-body);min-height:44px;padding:0 var(--sp-3);border-radius:var(--r-md);border:1px solid var(--c-border-input);background:var(--c-surface);color:var(--c-text)}
+input.err{border-color:var(--c-danger);border-width:2px} .errmsg{color:var(--c-danger);font-size:var(--fs-sm);font-weight:400}
+.amount{font:var(--fw-2xl) var(--fs-2xl)/var(--lh-2xl) var(--font-display);display:flex;align-items:baseline;gap:var(--sp-1)}
+.choice{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-surface);min-height:56px;font-weight:500}
+.choice.sel{background:var(--c-accent-soft);border:2px solid var(--c-accent);color:var(--c-on-accent-soft)}
+.dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--c-border-input);flex:none;display:grid;place-items:center} .sel .dot{background:var(--c-accent);border-color:var(--c-accent);color:var(--c-on-accent);font-size:12px}
+.bar{height:8px;border-radius:var(--r-full);background:var(--c-surface-2);overflow:hidden} .bar i{display:block;height:100%;width:40%;background:var(--c-accent)}
+.muted{color:var(--c-text-muted);font-size:var(--fs-sm)}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--c-surface-2);border-radius:var(--r-md);padding:4px;gap:4px}
+.seg span{text-align:center;padding:10px 0;border-radius:var(--r-sm);font-size:var(--fs-sm);font-weight:600}
+.seg .on{background:var(--c-surface);box-shadow:var(--shadow-card)}
+.hold{display:flex;justify-content:space-between;align-items:center;padding:var(--sp-3) 0;border-top:1px solid var(--c-border);min-height:56px}
+.hold:first-child{border-top:0} .gain{color:var(--c-success);font-weight:600} .loss{color:var(--c-danger);font-weight:600}
+.chip{font-size:var(--fs-xs);font-weight:600;padding:4px 8px;border-radius:var(--r-full);background:var(--c-surface-2);color:var(--c-text)}
+.pl{display:flex;flex-direction:column;gap:var(--sp-2)} .pl b{font-family:var(--font-display);font-size:var(--fs-lg);line-height:var(--lh-lg)}
+.banner{display:flex;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);border-radius:var(--r-md);font-size:var(--fs-sm)}
+.b-warn{background:var(--c-warning-soft);color:var(--c-warning)} .b-err{background:var(--c-danger-soft);color:var(--c-danger)} .b-ok{background:var(--c-success-soft);color:var(--c-success)}
+.chat{display:flex;flex-direction:column;gap:var(--sp-2)} .bub{max-width:85%;padding:var(--sp-3);border-radius:var(--r-md);font-size:var(--fs-sm)}
+.bub.u{align-self:flex-end;background:var(--c-accent-soft);color:var(--c-on-accent-soft)} .bub.a{align-self:flex-start;background:var(--c-surface-2)}
+.chipbtn{min-height:36px;background:var(--c-surface);border:1px solid var(--c-border-input);color:var(--c-text);border-radius:var(--r-full);font-weight:500}
+.skel{height:14px;border-radius:var(--r-sm);background:var(--c-surface-2)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--c-border);background:var(--c-surface);border-radius:var(--r-md);overflow:hidden}
+.tabs div{padding:10px 0;text-align:center;font-size:var(--fs-xs);color:var(--c-text-muted);display:flex;flex-direction:column;align-items:center;gap:4px} .tabs .on{color:var(--c-accent);font-weight:600}
+.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.sheet{background:var(--c-surface);border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:var(--shadow-sheet);padding:var(--sp-3) var(--sp-4) var(--sp-5);display:flex;flex-direction:column;gap:var(--sp-3)} .grab{width:40px;height:4px;border-radius:2px;background:var(--c-border-input);align-self:center}
+.toast{background:var(--c-text);color:var(--c-bg);padding:var(--sp-3) var(--sp-4);border-radius:var(--r-md);font-weight:500;font-size:var(--fs-sm);align-self:center}
+.empty{text-align:center;padding:var(--sp-6) var(--sp-4);display:flex;flex-direction:column;align-items:center;gap:var(--sp-2)}
+.wrow{display:grid;grid-template-columns:1fr 84px 44px;gap:var(--sp-2);align-items:center}
+.wrow input{text-align:right}
+.leg{display:grid;grid-template-columns:auto 1fr auto;gap:6px var(--sp-2);font-size:var(--fs-sm);align-items:center} .sw{width:12px;height:12px;border-radius:3px}
+</style></head><body><div class="wrap">
+<h1>Design sheet</h1><p class="muted">Primitives in isolation. Sample data is placeholder. Follows the system theme.</p>
+
+<section><h2>Buttons</h2><div class="card"><div class="row"><button class="pri">Continue</button><button class="sec">Back</button><button class="gho">Skip for now</button><button class="dng">Delete playlist</button></div>
+<div class="row"><button class="pri sm">Small</button><button class="pri" disabled>Disabled</button><button class="pri" aria-busy="true">Saving…</button></div><button class="pri lg">Invest $50</button></div></section>
+
+<section><h2>Fields</h2><div class="card">
+<label>Monthly amount<input type="text" value="50.00" inputmode="decimal"></label>
+<label>Playlist name<input type="text" class="err" aria-invalid="true" value=""><span class="errmsg">⚠ Give your playlist a name.</span></label>
+<div class="amount"><span class="muted">$</span>250.00</div></div></section>
+
+<section><h2>Questionnaire</h2><div class="card"><div class="muted">Step 2 of 5</div><div class="bar"><i></i></div><b style="font-family:var(--font-display);font-size:var(--fs-lg)">When might you need this money?</b>
+<div class="choice"><span class="dot"></span>Within 3 years</div><div class="choice sel"><span class="dot">✓</span>In 3 to 10 years</div><div class="choice"><span class="dot"></span>More than 10 years</div>
+<div class="seg"><span>Once</span><span>Weekly</span><span class="on">Biweekly</span><span>Monthly</span></div></div></section>
+
+<section><h2>Allocation donut</h2><div class="card"><div class="row" style="gap:var(--sp-5)">
+<svg width="132" height="132" viewBox="0 0 42 42" role="img" aria-label="Sample allocation: 40% stocks A, 25% B, 20% C, 15% D"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--c-surface-2)" stroke-width="6"/>
+<circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--c-chart-1)" stroke-width="6" stroke-dasharray="40 60" stroke-dashoffset="25"/>
+<circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--c-chart-2)" stroke-width="6" stroke-dasharray="25 75" stroke-dashoffset="-15"/>
+<circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--c-chart-3)" stroke-width="6" stroke-dasharray="20 80" stroke-dashoffset="-40"/>
+<circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--c-chart-4)" stroke-width="6" stroke-dasharray="15 85" stroke-dashoffset="-60"/></svg>
+<div class="leg"><i class="sw" style="background:var(--c-chart-1)"></i><span>Sample fund A</span><b>40%</b><i class="sw" style="background:var(--c-chart-2)"></i><span>Sample fund B</span><b>25%</b><i class="sw" style="background:var(--c-chart-3)"></i><span>Sample fund C</span><b>20%</b><i class="sw" style="background:var(--c-chart-4)"></i><span>Sample fund D</span><b>15%</b></div></div></div></section>
+
+<section><h2>Chart</h2><div class="card"><div class="row" style="justify-content:space-between"><b style="font-family:var(--font-display);font-size:var(--fs-xl)">$1,284.20</b><span class="gain">▲ $18.40 (1.4%)</span></div>
+<svg viewBox="0 0 300 90" width="100%" height="90" role="img" aria-label="Sample portfolio value rising over one month" preserveAspectRatio="none"><g stroke="var(--c-border)" stroke-width="1"><line x1="0" x2="300" y1="20" y2="20"/><line x1="0" x2="300" y1="50" y2="50"/><line x1="0" x2="300" y1="80" y2="80"/></g>
+<polyline fill="none" stroke="var(--c-accent)" stroke-width="2.5" vector-effect="non-scaling-stroke" points="0,70 40,62 80,66 120,48 160,52 200,34 240,38 300,22"/><circle cx="298" cy="22" r="4" fill="var(--c-accent)"/></svg>
+<div class="seg"><span>1W</span><span class="on">1M</span><span>3M</span><span>1Y</span></div><p class="muted" style="margin:0">Prices are delayed. Sample data.</p></div></section>
+
+<section><h2>Rows and cards</h2><div class="card">
+<div class="hold"><div><b>SAMPLE-A</b><div class="muted">Sample broad-market fund</div></div><div style="text-align:right"><b>$512.30</b><div class="gain">▲ 0.8%</div></div></div>
+<div class="hold"><div><b>SAMPLE-B</b><div class="muted">Sample bond fund</div></div><div style="text-align:right"><b>$301.10</b><div class="loss">▼ 0.3%</div></div></div></div>
+<div class="card pl"><b>Clean water</b><span class="muted">A sample theme about companies working on water supply.</span><div class="row"><span class="chip">TICK1</span><span class="chip">TICK2</span><span class="chip">TICK3</span><span class="muted">12 holdings</span></div></div>
+<div class="card"><div class="wrow"><span><b>TICK1</b></span><input type="text" value="40" inputmode="decimal" aria-label="TICK1 weight percent"><button class="sec sm" aria-label="Remove TICK1">✕</button></div>
+<div class="wrow"><span><b>TICK2</b></span><input type="text" value="50" inputmode="decimal" aria-label="TICK2 weight percent"><button class="sec sm" aria-label="Remove TICK2">✕</button></div>
+<div class="banner b-err" role="alert">⚠ Weights add up to 90%. They need to total 100%.</div></div></section>
+
+<section><h2>Allie chat</h2><div class="card"><div class="chat"><div class="bub u">What does rebalancing do?</div><div class="bub a">Rebalancing moves your holdings back toward your target mix after prices drift. It is explained here for learning, not advice.</div></div>
+<div class="row"><button class="chipbtn">Explain my mix</button><button class="chipbtn">What is an ETF?</button></div><div class="muted">Educational only, not investment advice.</div></div></section>
+
+<section><h2>Banners, toast, empty, loading</h2>
+<div class="banner b-warn" role="status">ⓘ Projections are hypothetical and not a guarantee.</div><div class="banner b-ok" role="status">✓ Monthly investing set up.</div>
+<div class="toast" role="status">Playlist saved</div>
+<div class="card empty"><b style="font-family:var(--font-display);font-size:var(--fs-lg)">Nothing invested yet</b><span class="muted">Pick a plan and add money to see your portfolio here.</span><button class="pri">Get started</button></div>
+<div class="card"><div class="skel" style="width:40%"></div><div class="skel" style="width:90%"></div><div class="skel" style="width:70%"></div></div></section>
+
+<section><h2>Navigation and sheet</h2>
+<div class="sheet"><span class="grab"></span><b style="font-family:var(--font-display);font-size:var(--fs-lg)">Change monthly amount</b><label>Amount<input type="text" value="50.00" inputmode="decimal"></label><button class="pri lg">Save</button></div>
+<div class="tabs" role="tablist"><div class="on" aria-current="page"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg>Home</div><div><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Playlists</div><div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Goals</div><div><svg viewBox="0 0 24 24"><path d="M5 5h14v10H9l-4 4z"/></svg>Allie</div></div></section>
+</div></body></html>
