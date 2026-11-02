@@ -1,0 +1,30 @@
+feature,area,priority,original,clone,notes
+"Goal questionnaire (goals, risk, horizon)",onboarding,must,yes,no,seen: App Store/site
+Matched model ETF portfolio,portfolio,must,yes,no,seen; clone uses clearly-labelled sample portfolios
+Auto-invest: amount + recurring schedule,portfolio,must,yes,no,seen
+Automatic rebalancing,portfolio,should,yes,no,seen on site
+Fractional shares,portfolio,must,yes,no,seen (secondary source)
+"Home: balance, performance chart, holdings",portfolio,must,yes,no,inferred
+Stock profiles,research,must,yes,no,seen
+Investing Playlists: browse themed collections,playlists,must,yes,no,seen
+Playlist detail + invest,playlists,must,yes,no,inferred
+Playlist builder (custom direct index),playlists,should,yes,no,seen (TechCrunch)
+Share playlists / community feed,social,could,yes,no,seen; private clone = own playlists only
+Daily Briefing (news for holdings),research,should,yes,no,seen
+Goal Projections / Investing Potential,planning,must,yes,no,"seen; hypothetical, labelled"
+Yearly Goals,planning,should,yes,no,seen
+AI Allie chat (educational),ai,must,yes,no,seen
+AI Allie Recaps,ai,should,yes,no,seen
+Crypto access (simulated prices),assets,could,yes,no,seen; no custody
+Activity / history,portfolio,should,yes,no,inferred
+Membership + billing screen,account,could,yes,no,private use: show as informational only
+Notifications,account,could,yes,no,inferred
+"Settings, profile, security",account,should,yes,no,inferred
+Legal and disclosures pages,account,must,yes,no,seen
+Marketing landing page + savings calculator,web,could,yes,no,seen on site
+Real brokerage and custody,regulated,skip,yes,no,SKIP: needs licensed broker partner (DriveWealth in original)
+SEC-registered adviser services,regulated,skip,yes,no,SKIP: regulated
+Bank linking (Plaid),regulated,skip,yes,no,SKIP: simulated funding instead
+Crypto custody (Zero Hash),regulated,skip,yes,no,SKIP
+KYC / identity / tax docs,regulated,skip,yes,no,SKIP
+"Alinea brand, copy, logos, proprietary portfolios",content,skip,yes,no,SKIP: original content only
