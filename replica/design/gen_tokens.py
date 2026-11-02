@@ -28,7 +28,7 @@ export default {{
     extend: {{
       colors: {{
       {colors},
-        muted: 'var(--c-text-muted)', 'on-accent-soft': 'var(--c-on-accent-soft)'
+        muted: 'var(--c-text-muted)'
       }},
       fontFamily: {{ display: ['var(--font-display)'], body: ['var(--font-body)'] }},
       fontSize: {{ {", ".join(f"{k!r}: ['var(--fs-{k})', {{ lineHeight: 'var(--lh-{k})', fontWeight: 'var(--fw-{k})' }}]" for k in t["type"])} }},
