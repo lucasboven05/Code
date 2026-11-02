@@ -24,7 +24,7 @@ Date: 2026-11-02 (one session). App lives in `clone/` (Next.js 15, React 19, Typ
 | S18 | Legal | done | |
 | S19 | Marketing landing + calculator | not built | |
 
-**Screens done: 12 of 19 fully, 5 partial (S06, S11, S12, S14, S16/S17 info), 2 not built (S15, S19). Must-haves: 9 of 11 done; the two partial must-haves are Stock profiles and Allie chat.**
+**Screens: 11 of 19 done (S01-S05, S07-S10, S13, S18), 6 partial (S06, S11, S12, S14, S16, S17), 2 not built (S15, S19). Must-haves: 9 of 11 done; the two partial must-haves are Stock profiles and Allie chat.**
 
 ## Differences from the plan
 - **Jobs run when the app opens, not on a server cron.** `runJobs` replays every market day since the last open, so nothing is missed and nothing runs twice (tested). Real cron arrives with the backend.
