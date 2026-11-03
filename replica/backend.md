@@ -11,11 +11,14 @@ Offline mode still works: leave `NEXT_PUBLIC_BACKEND` unset and nothing below is
 - **Jobs:** `/api/cron/daily` (Vercel Cron, `vercel.json`, weekdays 21:30 UTC, `Authorization: Bearer $CRON_SECRET`) replays missed market days for every user. Idempotent.
 - **Allie:** with `ANTHROPIC_API_KEY` set, Allie calls the Claude API from the server (model `claude-opus-5-5` by default, `ALLIE_MODEL` to change, low effort, server-side refusal fallback). With no key, or on any error or refusal, it falls back to the scripted answers.
 
+## Inbox (migration 0002)
+`notifications` table (read by its owner under row level security, written only by the server). The job runner and every load turn what happened into notices (contribution made, rebalanced, daily briefing, weekly recap), respecting the three switches, announcing only the last 7 days, never twice. New action `markAllNoticesRead`.
+
 ## Routes
 | route | what | auth |
 |---|---|---|
 | GET /api/state | load the signed-in user's state (runs due jobs) | bearer token |
-| POST /api/rpc | one of 17 whitelisted actions, each with its own zod schema | bearer token, rate limited (120/min, chat 15/min) |
+| POST /api/rpc | one of 18 whitelisted actions, each with its own zod schema | bearer token, rate limited (120/min, chat 15/min) |
 | DELETE /api/account | delete the sign-in user; everything cascades | bearer token + `{"confirm":true}` |
 | GET /api/cron/daily | run the daily job for all users | `CRON_SECRET` bearer, constant-time compare |
 
@@ -39,7 +42,7 @@ Offline mode still works: leave `NEXT_PUBLIC_BACKEND` unset and nothing below is
 - [x] Privacy text lists the processors that apply (Supabase, Vercel, Anthropic when AI mode is on) on the Legal screen. It is plain information, not legal advice.
 
 ## Verified here
-- 58 tests: engine (17), migrations + constraints + row level security + round trip + deletion on PGlite (11), server rules, auth, Allie adapter, daily job (17), HTTP handlers + browser data layer against them (9), and 4 on **real PostgreSQL 16** through the real `pg` driver (`TEST_DATABASE_URL=postgres://... npm test`): commit/rollback, 8 simultaneous requests for one user all applied (without the lock 6 of 8 were lost), two users in parallel, row level security.
+- 114 tests (as of the notifications work): engine, regressions, stock figures and inbox logic, migrations + constraints + row level security + round trip + deletion on PGlite, server rules, auth, Allie adapter, daily job, HTTP handlers + browser data layer against them, and 4 on **real PostgreSQL 16** through the real `pg` driver (`TEST_DATABASE_URL=postgres://... npm test`): commit/rollback, 8 simultaneous requests for one user all applied (without the lock 6 of 8 were lost), two users in parallel, row level security.
 - `e2e/backend.cjs`: real browser against the real Next server and real Postgres: signed-out sign-in screen and validation, API refuses no token, whole onboarding stored in Postgres (12 deposits, 76 orders), nothing app-related left in browser storage, cash/playlist/Allie actions, reload re-reads the server, a second user sees nothing, account deletion removes every row.
 - Offline mode regression: both original browser suites still pass; first-load JS back to about 120 kB (Supabase client loads only when a backend is configured).
 

@@ -72,11 +72,21 @@ Only reproduced bugs are listed. "Found by" is the failing test before the fix. 
 - Found by: X-A1 (axe rule `aria-progressbar-name`, serious, light and dark).
 - Fix: labelled "Setup progress", with "Step n of 5" as its value text. After this, axe reports zero WCAG A/AA violations on all 16 screens in both colour schemes.
 
+### BUG-16 (S3) "Ask Allie about this" got a generic, off-target answer
+- Found by: F06-E5, while building the stock figures feature.
+- Steps: open an investment whose name contains "Fund", tap "Ask Allie about this", send. Expected: what drives it and how risky it is. Actual: the generic "what is a fund" explanation, because a keyword in the name matched before the question's meaning.
+- Fix: the question's intent ("what drives", "how risky", "what moves") is checked first; tests for a fund, a company and a coin.
+
+### BUG-17 (S3) Header buttons and numbers broke in the middle of words ("Inbo/x", "-15 / %")
+- Found by: reading screenshots of the new screens, then X-V1 (which now checks every page at 320 and 390 px).
+- Cause: my own fix for BUG-11 (`overflow-wrap: anywhere`) let buttons, titles and values shrink until they split mid-word. The overflow tests could not see it because nothing overflowed.
+- Fix: buttons, labels and values do not wrap; the title shortens with an ellipsis; Settings became an icon like the bell. X-V1 fails on any wrapped label or value.
+
 ## Open
 None. No open S1 or S2.
 
 ## Counts
-15 bugs found and fixed: S1 x1 (BUG-07), S2 x3 (BUG-02, 03, 06), S3 x9 (BUG-04, 05, 08, 09, 10, 11, 12, 14, 15), S4 x2 (BUG-01, 13).
+17 bugs found and fixed: S1 x1 (BUG-07), S2 x3 (BUG-02, 03, 06), S3 x11 (BUG-04, 05, 08, 09, 10, 11, 12, 14, 15, 16, 17), S4 x2 (BUG-01, 13).
 Every fix has a test that failed before it: the e2e spec in `clone/e2e/specs/` and, where the logic is in the data layer, a unit test in `clone/tests/regressions.test.ts`.
 
 ## To check (seen, not reproduced as a defect, or needs a person)

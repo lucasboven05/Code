@@ -78,6 +78,20 @@ Every automated test also fails on: any console error, uncaught page error, any 
 | F07-E5 | reset practice account | back to setup, own playlists kept, no leftovers | A |
 | F07-E6 | delete all data | welcome screen | A |
 
+## F06 additions (stock figures) and F08 Inbox
+| ID | case | how |
+|---|---|---|
+| F06-E5 | key figures, what drives it, Ask Allie fills the question without sending | A |
+| F06-E6 | calm and wild investments are described differently | A |
+| F06-E7 | a question handed over in the address is capped at 500 characters and shown as text | A |
+| F08-H1 | a plan produces contribution, briefing and recap notices; the bell counts them; rows link to the right screen | A |
+| F08-E1 | mark all read clears the count and survives a reload | A |
+| F08-E2 | a week later new notices arrive | A |
+| F08-E3 | switching notifications off stops those kinds (the weekly recap has no switch) | A |
+| F08-E4 | an empty inbox explains itself | A |
+| F08-E5 | reloading never duplicates notices; a year-long replay announces only the last week | A |
+| X-V1 | short labels and numbers never wrap, every page, 320 and 390 px | A |
+
 ## X Cross-cutting
 | X-A1 | axe (WCAG 2 A/AA) on 16 screens, light and dark | zero violations | A |
 | X-K1 | keyboard only: complete the questionnaire and a sheet; focus trapped in sheet | A |
@@ -94,13 +108,13 @@ Every automated test also fails on: any console error, uncaught page error, any 
 ## Results (2026-11-03)
 | layer | run | result |
 |---|---|---|
-| Playwright e2e (`clone/e2e/specs`, 79 tests; plans F01-F07, X) | first run | 57 passed, 22 failed (11 were real bugs, the rest mistakes in the tests) |
-| same, after fixes | final | **79 passed**, 0 failed, 0 flaky |
-| Unit + server tests (vitest) | final | 93 passed, 4 skipped (the 4 need a real Postgres) |
-| Real Postgres 16 driver tests | final | 4 of 4 passed |
+| Playwright e2e (`clone/e2e/specs`; plans F01-F08, X) | first run (79 tests) | 57 passed, 22 failed (11 were real bugs, the rest mistakes in the tests) |
+| same, after the new features | final (90 tests) | **90 passed**, 0 failed, 0 flaky |
+| Unit + server tests (vitest) | final | 110 passed, 4 skipped without a database (all 114 pass with one) |
+| Real Postgres 16 driver tests | final | 4 of 4 passed; migrations 0001 and 0002 applied |
 | Browser against real server + Postgres (`e2e/backend.cjs`, B-1) | final | passed (10 checks) |
 | Older smoke scripts (`e2e/slice.cjs`, `e2e/screens.cjs`) | final | passed |
-| Accessibility (X-A1) | final | 0 WCAG A/AA violations on 16 screens, light and dark |
+| Accessibility (X-A1) | final | 0 WCAG A/AA violations on 17 screens including the inbox, light and dark |
 
 Not run: X-N2 reduced motion, B-2 (expired session, offline, email delivery), X-M1 (real phones, screen reader). See `bugs.md` "To check".
 

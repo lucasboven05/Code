@@ -9,7 +9,7 @@ Date: 2026-11-02 (one session). App lives in `clone/` (Next.js 15, React 19, Typ
 | S03 | Matched portfolio | done | portfolios are fictional samples; user cannot override the match |
 | S04 | Fund + schedule | done | extension: "practice start" replays the plan on past prices (not in the original) |
 | S05 | Home / portfolio | done | chart is replayed from the order log |
-| S06 | Stock profile | partial | simulated price chart, your holding, about. No real fundamentals, no news list, no Allie summary |
+| S06 | Stock profile | done | chart, your holding, key figures from the simulated history, plain-words drivers, Ask Allie. No real fundamentals or news: the investments are fictional |
 | S07 | Playlists browse | done | |
 | S08 | Playlist detail | done | performance is a simulated 3-month index |
 | S09 | Playlist builder | done | create, edit, delete; weights must total 100% |
@@ -51,3 +51,6 @@ Auth, database, API, daily job and the Claude-backed Allie were added in `clone/
 
 ## Test pass (2026-11-03)
 79 browser tests plus 93 unit/server tests; 15 bugs found and fixed (`replica/bugs.md`). Main fixes: a double-click made two plans, two browser tabs overwrote each other, partial stored data broke Home, long names widened the page, errors hid behind sheets, and the data layer now enforces the same limits as the server.
+
+## Build pass: stock figures and inbox (2026-11-03)
+S06 is now complete. New: **S20 Inbox** (bell with unread count in every header, notices for contribution made, rebalanced, daily briefing, weekly recap), migration 0002, the `markAllNoticesRead` action, and "Ask Allie about this". Settings in the header is now an icon. Two bugs found on the way (BUG-16, BUG-17). Not built, and why: real-news briefing (the investments are fictional, so there is no real news about them), Allie on the real Claude API (needs your key), the real Supabase sign-in check (needs your project).

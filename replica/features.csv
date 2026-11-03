@@ -5,20 +5,20 @@ Auto-invest: amount + recurring schedule,portfolio,must,yes,yes,seen | BUILD: on
 Automatic rebalancing,portfolio,should,yes,yes,"seen on site | BUILD: weekly check, 3-point drift trigger, toggle in Settings"
 Fractional shares,portfolio,must,yes,yes,"seen (secondary source) | BUILD: 8 decimals, floored; leftover cents stay as cash"
 "Home: balance, performance chart, holdings",portfolio,must,yes,yes,inferred | BUILD: value replayed from order log; 1W-All; practice-start replay is an extension
-Stock profiles,research,must,yes,partial,"seen | BUILD: chart, holding, about, 1y range. No real stats or news"
+Stock profiles,research,must,yes,yes,"seen | BUILD: chart, your holding, key figures (1-year change, typical daily move, worst fall, range) from the simulated history, plain-words drivers, Ask Allie button. No real fundamentals or news: the investments are fictional"
 Investing Playlists: browse themed collections,playlists,must,yes,yes,"seen | BUILD: 5 built-in sample playlists, search, Mine tab"
 Playlist detail + invest,playlists,must,yes,yes,"inferred | BUILD: weights, simulated 3-month index, invest sheet"
 Playlist builder (custom direct index),playlists,should,yes,yes,"seen (TechCrunch) | BUILD: search, weights must total 100%, edit, delete"
 Share playlists / community feed,social,could,yes,partial,seen; private clone = own playlists only | BUILD: own playlists only; no sharing or feed (private clone)
-Daily Briefing (news for holdings),research,should,yes,partial,"seen | BUILD: built from simulated price moves, NOT real news"
+Daily Briefing (news for holdings),research,should,yes,partial,"seen | BUILD: now delivered every market day to the inbox; still built from simulated price moves, not real news (real news about fictional investments is not possible)"
 Goal Projections / Investing Potential,planning,must,yes,yes,"seen; hypothetical, labelled | BUILD: rate slider, monthly-needed, labelled hypothetical"
 Yearly Goals,planning,should,yes,yes,seen | BUILD: create/edit/delete
 AI Allie chat (educational),ai,must,yes,partial,seen | BUILD: scripted answers behind the real interface; no LLM yet | BACKEND: Claude API mode written and mock-tested (needs your key); scripted fallback always works
-AI Allie Recaps,ai,should,yes,partial,"seen | BUILD: on-demand button, scripted; not weekly/automatic"
+AI Allie Recaps,ai,should,yes,yes,"seen | BUILD: automatic weekly recap in the inbox and an on-demand recap in the chat; the wording is scripted, not AI-written"
 Crypto access (simulated prices),assets,could,yes,partial,seen; no custody | BUILD: two simulated coins list + playlist; no buy sheet of its own
 Activity / history,portfolio,should,yes,yes,inferred | BUILD: filters + paging
 Membership + billing screen,account,could,yes,partial,private use: show as informational only | BUILD: info card in Settings; no billing by design
-Notifications,account,could,yes,partial,inferred | BUILD: preferences saved; nothing is delivered
+Notifications,account,could,yes,yes,"inferred | BUILD: in-app inbox with a bell and unread count: contribution made, rebalanced, daily briefing, weekly recap; each switchable in Settings (the weekly recap has no switch). No push or email"
 "Settings, profile, security",account,should,yes,yes,"inferred | BUILD: profile, time zone, toggles, reset/delete. No security settings (no accounts yet) | BACKEND: sign-in, sign out everywhere, delete account added (needs your Supabase project to verify email sign-in)"
 Legal and disclosures pages,account,must,yes,yes,seen | BUILD: About and disclosures
 Marketing landing page + savings calculator,web,could,yes,no,seen on site | BUILD: not started
