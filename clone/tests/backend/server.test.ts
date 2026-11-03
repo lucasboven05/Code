@@ -18,7 +18,7 @@ const rpc = (userId: string, method: string, ...args: unknown[]) => handleRpc({ 
 const code = async (p: Promise<unknown>) => { try { await p; return 0; } catch (e) { return e instanceof HttpError ? e.status : -1; } };
 
 describe('RPC input validation', () => {
-  it('exposes exactly the whitelisted actions', () => { expect(RPC_METHODS.sort()).toEqual(['addMoney', 'addRecap', 'completeOnboarding', 'createPlaylist', 'deleteEverything', 'deleteGoal', 'deletePlaylist', 'investInPlaylist', 'resetAccount', 'saveGoal', 'saveProfile', 'sendChat', 'setPrefs', 'setRebalance', 'setTimezone', 'updateContribution', 'updatePlaylist']); });
+  it('exposes exactly the whitelisted actions', () => { expect(RPC_METHODS.sort()).toEqual(['addMoney', 'addRecap', 'completeOnboarding', 'createPlaylist', 'deleteEverything', 'deleteGoal', 'deletePlaylist', 'investInPlaylist', 'markAllNoticesRead', 'resetAccount', 'saveGoal', 'saveProfile', 'sendChat', 'setPrefs', 'setRebalance', 'setTimezone', 'updateContribution', 'updatePlaylist']); });
   it('rejects unknown actions, including prototype tricks', async () => {
     for (const m of ['nope', 'load', 'constructor', '__proto__', 'toString', 'save', 'state']) expect(await code(rpc(A, m)), m).toBe(400);
   });

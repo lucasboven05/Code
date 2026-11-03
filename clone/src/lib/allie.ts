@@ -18,6 +18,7 @@ function mix(ctx: AllieContext): string {
 }
 
 const TOPICS: { test: RegExp; answer: (c: AllieContext) => string }[] = [
+  { test: /what drives|how risky|what moves/i, answer: () => 'What moves an investment depends on what is inside it. A fund follows everything it holds, so one bad company matters less. A single company follows its own results and news, so it can swing more. A digital coin follows how many people want it, so it can swing the most. Risk here means how far prices can swing and that you can lose money. The key figures on the investment\'s page, the typical daily move and the worst fall, show how bumpy it has been. Past swings do not predict future ones.' },
   { test: /rebalanc/i, answer: () => 'Prices move, so over time some holdings grow bigger than planned. Rebalancing sells a little of what grew and buys a little of what lagged, bringing the mix back to its target. It keeps your risk close to what you chose. It can also mean selling winners, which is a trade-off worth knowing about.' },
   { test: /\betf\b|fund/i, answer: () => 'A fund (often an ETF) bundles many investments into one. Buying one share gives you a small slice of everything inside. That spreads risk compared with buying a single company. Funds still go up and down with their markets.' },
   { test: /diversif|spread/i, answer: () => 'Diversifying means not putting all your money in one place. If one company or sector falls, the others may cushion it. It reduces the damage from any single bad outcome, but it cannot remove market-wide losses.' },

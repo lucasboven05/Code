@@ -24,6 +24,7 @@ const METHODS: Record<string, z.ZodType<unknown[]>> = {
   deletePlaylist: z.tuple([id]),
   investInPlaylist: z.tuple([z.string().min(1).max(40), money]),
   addMoney: z.tuple([money]),
+  markAllNoticesRead: z.tuple([]),
   saveGoal: z.tuple([z.object({ id: id.optional(), name: z.string().trim().min(1).max(40), targetCents: z.number().int().min(100).max(1e12), targetYear: z.number().int().min(2000).max(2200) }).strict()]),
   deleteGoal: z.tuple([id]),
   sendChat: z.tuple([z.string().trim().min(1).max(500)]),

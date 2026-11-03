@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { answerQuestions, expect, onboard, overflowPx, readState, test } from '../fixtures';
 const quick = (page: any) => onboard(page, { start: '6 months ago' });
-const PAGES = ['/welcome', '/onboarding', '/onboarding/portfolio', '/onboarding/fund', '/home', '/stock/S-US', '/playlists', '/playlists/p-clean', '/playlists/new', '/goals', '/allie', '/briefing', '/activity', '/crypto', '/settings', '/legal'];
+const PAGES = ['/welcome', '/onboarding', '/onboarding/portfolio', '/onboarding/fund', '/home', '/stock/S-US', '/playlists', '/playlists/p-clean', '/playlists/new', '/goals', '/allie', '/briefing', '/activity', '/inbox', '/crypto', '/settings', '/legal'];
 
 for (const scheme of ['light', 'dark'] as const) test.describe(`X-A1 accessibility (${scheme})`, () => {
   test.use({ colorScheme: scheme });
@@ -71,4 +71,19 @@ test('X-N1 blocked web fonts: layout still fits and nothing breaks', async ({ pa
 });
 test('X-S1 a markup name never runs as script anywhere it is shown', async ({ page }) => {
   await onboard(page, { name: '<img src=x onerror="window.__xss=1">', start: 'Today', freq: 'Once' }); for (const u of ['/home', '/settings', '/allie']) { await page.goto(u); await page.waitForTimeout(200); expect(await page.evaluate(() => (window as any).__xss), u).toBeUndefined(); }
+});
+
+test.describe('X-V1 short labels and numbers never break across lines', () => {
+  for (const width of [320, 390]) test(`at ${width}px`, async ({ page }) => {
+    test.setTimeout(120_000); await page.setViewportSize({ width, height: 700 }); await quick(page); const bad: string[] = [];
+    for (const u of PAGES.filter((x) => !x.startsWith('/onboarding') && x !== '/welcome')) {
+      await page.goto(u); await page.waitForTimeout(250);
+      const found = await page.evaluate(() => [...document.querySelectorAll('.topbar-in h1, .topbar-in a, .topbar-in button, .list-row > b, .chip, .tab, .btn')].filter((el) => {
+        // measure only the text itself (icons and badges legitimately sit on their own row)
+        return [...el.childNodes].some((n) => { if (n.nodeType !== 3 || !(n.textContent || '').trim()) return false; const r = document.createRange(); r.selectNodeContents(n); return new Set([...r.getClientRects()].map((x) => Math.round(x.top))).size > 1; });
+      }).map((el) => ((el as HTMLElement).innerText || el.getAttribute('aria-label') || '').trim().slice(0, 30)));
+      for (const f of found) bad.push(`${u}: "${f}"`);
+    }
+    expect(bad).toEqual([]);
+  });
 });

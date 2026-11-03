@@ -34,6 +34,7 @@ export class PgStore implements Store {
     s.chat = (await q<any>(`select id, role, content, kind, sent_on::text as d from chat_messages where user_id = $1 order by seq`)).map((r) => ({ id: r.id, role: r.role, content: r.content, kind: r.kind, date: r.d }));
     const [n] = await q<any>(`select daily_briefing, contribution_done, rebalance_done from notification_prefs where user_id = $1`);
     if (n) s.prefs = { dailyBriefing: n.daily_briefing, contributionDone: n.contribution_done, rebalanceDone: n.rebalance_done };
+    s.inbox = (await q<any>(`select id, kind, title, body, notice_date::text as d, read from notifications where user_id = $1 order by seq`)).map((r) => ({ id: r.id, kind: r.kind, title: r.title, text: r.body, date: r.d, read: r.read }));
     return s;
   }
 
@@ -90,13 +91,16 @@ export class PgStore implements Store {
     await x('delete from chat_messages where user_id = $1 and id <> all($2::uuid[])', [u, s.chat.map((m) => m.id)]);
     for (const m of s.chat) await x('insert into chat_messages (id, thread_id, user_id, role, content, kind, sent_on) values ($1,$2,$3,$4,$5,$6,$7) on conflict (id) do nothing', [m.id, t.id, u, m.role, m.content, m.kind, m.date]);
 
+    await x('delete from notifications where user_id = $1 and id <> all($2::uuid[])', [u, s.inbox.map((n) => n.id)]);
+    for (const n of s.inbox) await x(`insert into notifications (id, user_id, kind, title, body, notice_date, read) values ($1,$2,$3,$4,$5,$6,$7)
+      on conflict (id) do update set read = $7`, [n.id, u, n.kind, n.title, n.text, n.date, n.read]);
     await x(`insert into notification_prefs (user_id, daily_briefing, contribution_done, rebalance_done) values ($1,$2,$3,$4)
       on conflict (user_id) do update set daily_briefing=$2, contribution_done=$3, rebalance_done=$4, updated_at=now()`, [u, s.prefs.dailyBriefing, s.prefs.contributionDone, s.prefs.rebalanceDone]);
     await x('insert into memberships (user_id) values ($1) on conflict (user_id) do nothing', [u]);
   }
 
   async clear(): Promise<void> {
-    for (const t of ['chat_messages', 'chat_threads', 'playlist_investments', 'playlists', 'goals', 'orders', 'contributions', 'holdings', 'accounts', 'notification_prefs', 'memberships', 'profiles'])
+    for (const t of ['notifications', 'chat_messages', 'chat_threads', 'playlist_investments', 'playlists', 'goals', 'orders', 'contributions', 'holdings', 'accounts', 'notification_prefs', 'memberships', 'profiles'])
       await this.db.query(`delete from ${t} where ${t === 'playlists' ? 'owner_id' : 'user_id'} = $1`, [this.userId]);
     this.knownOrders.clear();
   }

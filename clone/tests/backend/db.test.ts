@@ -24,7 +24,7 @@ async function setup(uid: string, name: string) {
 beforeAll(async () => { ({ pg, pool } = await makeDb()); A = await addUser(pool); B = await addUser(pool); }, 60_000);
 
 describe('migrations', () => {
-  it('apply cleanly, only once', async () => { expect(await migrate(pool)).toEqual([]); const n = (await pool.query('select count(*)::int as n from schema_migrations')).rows[0].n; expect(n).toBe(1); });
+  it('apply cleanly, only once', async () => { expect(await migrate(pool)).toEqual([]); const n = (await pool.query('select count(*)::int as n from schema_migrations')).rows[0].n; expect(n).toBe(2); });
   it('seed the reference tables and every sample portfolio totals 100%', async () => {
     const r = await pool.query('select mp.slug, sum(a.weight_bps)::int as w from model_portfolios mp join model_portfolio_allocations a on a.model_portfolio_id = mp.id group by mp.slug');
     expect(r.rows.length).toBe(MODELS.length); for (const x of r.rows) expect(x.w).toBe(10000);
@@ -36,6 +36,7 @@ describe('state round trip through Postgres', () => {
     const before = await setup(A, 'Sam');
     const after = await withUser(pool, A, (store) => new Service(store, NOW).load());
     expect(norm(after)).toEqual(norm(before));
+    expect(after.inbox.length, 'notices are stored and loaded').toBeGreaterThan(0); expect(after.inbox.every((n) => n.read === false)).toBe(true);
     expect(after.orders.length).toBeGreaterThan(6); expect(after.chat.map((m) => m.role)).toEqual(['user', 'assistant']);
   });
   it('loading again does not rewrite history or duplicate orders', async () => {
@@ -69,17 +70,17 @@ describe('a second user sees and changes nothing of the first user', () => {
     await setup(B, 'Robin');
     const mineA = await asUser(pg, A, async () => ({
       accounts: (await pg.query('select user_id from accounts')).rows, orders: (await pg.query('select distinct user_id from orders')).rows, goals: (await pg.query('select user_id from goals')).rows,
-      chat: (await pg.query('select distinct user_id from chat_messages')).rows, holdings: (await pg.query('select distinct user_id from holdings')).rows, playlists: (await pg.query('select owner_id from playlists where owner_id is not null')).rows,
+      chat: (await pg.query('select distinct user_id from chat_messages')).rows, notices: (await pg.query('select distinct user_id from notifications')).rows, holdings: (await pg.query('select distinct user_id from holdings')).rows, playlists: (await pg.query('select owner_id from playlists where owner_id is not null')).rows,
       instruments: (await pg.query('select 1 from instruments')).rows.length,
     }));
     expect(mineA.accounts).toEqual([{ user_id: A }]); expect(mineA.orders).toEqual([{ user_id: A }]); expect(mineA.goals).toEqual([{ user_id: A }]);
-    expect(mineA.chat).toEqual([{ user_id: A }]); expect(mineA.holdings).toEqual([{ user_id: A }]); expect(mineA.instruments).toBeGreaterThan(10);
+    expect(mineA.chat).toEqual([{ user_id: A }]); expect(mineA.notices).toEqual([{ user_id: A }]); expect(mineA.holdings).toEqual([{ user_id: A }]); expect(mineA.instruments).toBeGreaterThan(10);
     for (const p of mineA.playlists as any[]) expect(p.owner_id).toBe(A);
     const spy = await asUser(pg, A, async () => ((await pg.query('select count(*)::int as n from orders where user_id = $1', [B])).rows[0] as { n: number }).n);
     expect(spy).toBe(0);
   });
   it('the browser role cannot write at all, to its own rows or anyone else\'s', async () => {
-    const attempts = ["update accounts set cash_cents = 999999999", "delete from orders", "insert into goals (user_id, name, target_amount_cents, target_year) values ('" + A + "','x',100,2030)", "update profiles set display_name = 'hacked'", "delete from chat_messages", "update instruments set name = 'x'"];
+    const attempts = ["update accounts set cash_cents = 999999999", "delete from orders", "insert into goals (user_id, name, target_amount_cents, target_year) values ('" + A + "','x',100,2030)", "update profiles set display_name = 'hacked'", "delete from chat_messages", "update notifications set read = true", "insert into notifications (user_id, kind, title, body, notice_date) values ('" + A + "','recap','x','y','2026-01-01')", "update instruments set name = 'x'"];
     for (const sql of attempts) await asUser(pg, A, async () => { await expect(pg.query(sql)).rejects.toThrow(/permission denied/); });
   });
   it('server layer: each user\'s requests only ever touch their own data', async () => {
@@ -94,7 +95,7 @@ describe('a second user sees and changes nothing of the first user', () => {
 describe('account deletion', () => {
   it('removes every row the user owns', async () => {
     await deleteAccount(pool, B);
-    for (const t of ['profiles', 'accounts', 'holdings', 'contributions', 'orders', 'goals', 'playlists', 'playlist_investments', 'chat_messages', 'chat_threads', 'notification_prefs', 'memberships']) {
+    for (const t of ['profiles', 'accounts', 'holdings', 'contributions', 'orders', 'goals', 'playlists', 'playlist_investments', 'chat_messages', 'chat_threads', 'notifications', 'notification_prefs', 'memberships']) {
       const col = t === 'playlists' ? 'owner_id' : 'user_id';
       expect((await pool.query(`select count(*)::int as n from ${t} where ${col} = $1`, [B])).rows[0].n, t).toBe(0);
     }

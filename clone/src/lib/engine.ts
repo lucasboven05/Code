@@ -2,6 +2,7 @@
 // Money is integer cents. Quantities are floored to 8 decimals so a buy never spends more than it was given.
 import { MODELS, BUILTIN_PLAYLISTS } from './seed';
 import { addDays, addMonths, isTradingDay, prevTradingDay, toDate, weekday } from './calendar';
+import { dateFmt, usd } from './format';
 import type { Alloc, Contribution, Frequency, ModelPortfolio, Order, OrderKind, PriceAt, Profile, State } from './types';
 
 export const BPS = 10000;
@@ -12,7 +13,7 @@ export function emptyState(timezone = 'America/Panama'): State {
     profile: { displayName: '', birthYear: null, riskTolerance: null, horizonYears: null, goals: [], step: 0, onboardedAt: null, timezone },
     account: { cashCents: 0, netDepositsCents: 0, modelId: null, rebalanceEnabled: true },
     holdings: [], contributions: [], orders: [], goals: [], playlists: BUILTIN_PLAYLISTS.map((p) => ({ ...p, items: p.items.map((i) => ({ ...i })) })),
-    playlistInvestments: [], chat: [], prefs: { dailyBriefing: true, contributionDone: true, rebalanceDone: true },
+    playlistInvestments: [], chat: [], prefs: { dailyBriefing: true, contributionDone: true, rebalanceDone: true }, inbox: [],
     lastJobsOn: null, seq: 0,
   };
 }
@@ -208,7 +209,37 @@ export function normalizeState(raw: unknown, timezone = 'America/Panama'): State
     profile: { ...base.profile, ...(isObj(raw.profile) ? raw.profile : {}) } as State['profile'],
     account: { ...base.account, ...(isObj(raw.account) ? raw.account : {}) } as State['account'],
     prefs: { ...base.prefs, ...(isObj(raw.prefs) ? raw.prefs : {}) } as State['prefs'],
+    inbox: arr<State['inbox'][number]>(raw.inbox).filter((n) => typeof n.id === 'string' && typeof n.title === 'string' && typeof n.text === 'string' && typeof n.date === 'string').map((n) => ({ ...n, read: n.read === true })),
     holdings: arr(raw.holdings), contributions: arr(raw.contributions), orders: arr(raw.orders), goals: arr(raw.goals), chat: arr(raw.chat), playlistInvestments: arr(raw.playlistInvestments),
     playlists: [...base.playlists, ...own], lastJobsOn: typeof raw.lastJobsOn === 'string' ? raw.lastJobsOn : null, seq: typeof raw.seq === 'number' ? raw.seq : 0,
   };
 }
+
+const RECENT_DAYS = 7;
+const weekStart = (d: string) => addDays(d, -((weekday(d) + 6) % 7));       // the Monday of d's week
+/** After the job runner has run: turn what it did into inbox notices. Idempotent, respects the notification settings,
+ *  and only announces recent days (replaying a year of a plan must not flood the inbox). */
+export function addNotices(before: State, after: State, today: string, priceAt: PriceAt): State {
+  const s = clone(after); const recent = (d: string) => d >= addDays(today, -RECENT_DAYS);
+  const push = (kind: State['inbox'][number]['kind'], title: string, text: string, date: string) => { s.inbox.push({ id: newId(s, 'n'), kind, title, text, date, read: false }); };
+  const model = MODELS.find((m) => m.id === s.account.modelId); const fresh = after.orders.slice(before.orders.length);
+  if (s.prefs.contributionDone) for (const o of fresh) if (o.kind === 'deposit' && o.contributionId && recent(o.date)) push('contribution', 'Contribution made', `${usd(o.amountCents)} was added${model ? ` and invested in your ${model.name} mix` : ''}.`, o.date);
+  if (s.prefs.rebalanceDone) {
+    const byDate = new Map<string, number>(); for (const o of fresh) if (o.kind.startsWith('rebalance') && recent(o.date)) byDate.set(o.date, (byDate.get(o.date) ?? 0) + 1);
+    for (const [d, n] of byDate) push('rebalance', 'Portfolio rebalanced', `${n} trade${n === 1 ? '' : 's'} moved your holdings back toward their targets.`, d);
+  }
+  if (s.profile.onboardedAt && s.holdings.length) {
+    const asOf = prevTradingDay(today);
+    if (s.prefs.dailyBriefing && !s.inbox.some((n) => n.kind === 'briefing' && n.date === asOf)) {
+      const prev = prevTradingDay(addDays(asOf, -1)); const value = totalValueCents(s, asOf, priceAt);
+      const prevValue = Math.round(s.holdings.reduce((t, h) => t + h.qty * priceAt(h.ticker, prev) * 100, s.account.cashCents)); const diff = value - prevValue;
+      push('briefing', 'Daily briefing', `Your practice account ${diff >= 0 ? 'rose' : 'fell'} ${usd(Math.abs(diff))} on ${dateFmt(asOf)} and is now worth ${usd(value)}.`, asOf);
+    }
+    if (!s.inbox.some((n) => n.kind === 'recap' && n.date >= weekStart(today))) {
+      const value = totalValueCents(s, asOf, priceAt); const gain = value - s.account.netDepositsCents;
+      push('recap', 'Weekly recap', `Your practice account is worth ${usd(value)}. You have put in ${usd(s.account.netDepositsCents)}, so the difference is ${usd(gain, { sign: true })}.`, today);
+    }
+  }
+  s.inbox = s.inbox.slice(-100); return s;
+}
+export function markAllRead(state: State): State { const s = clone(state); s.inbox.forEach((n) => { n.read = true; }); return s; }

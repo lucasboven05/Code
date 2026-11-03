@@ -25,12 +25,13 @@ export type Playlist = {
 };
 export type PlaylistInvestment = { playlistId: string; amountCents: number; date: string };
 export type ChatMessage = { id: string; role: 'user' | 'assistant'; content: string; kind: 'chat' | 'recap'; date: string };
+export type Notice = { id: string; kind: 'contribution' | 'rebalance' | 'briefing' | 'recap'; title: string; text: string; date: string; read: boolean };
 export type NotificationPrefs = { dailyBriefing: boolean; contributionDone: boolean; rebalanceDone: boolean };
 
 export type State = {
   v: 1;
   profile: Profile; account: Account; holdings: Holding[]; contributions: Contribution[]; orders: Order[];
   goals: Goal[]; playlists: Playlist[]; playlistInvestments: PlaylistInvestment[]; chat: ChatMessage[];
-  prefs: NotificationPrefs; lastJobsOn: string | null; seq: number;
+  prefs: NotificationPrefs; inbox: Notice[]; lastJobsOn: string | null; seq: number;
 };
 export type PriceAt = (ticker: string, date: string) => number;

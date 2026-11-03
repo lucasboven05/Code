@@ -5,7 +5,7 @@ import { emptyState } from './engine';
 import type { State } from './types';
 
 const nullStore: Store = { load: async () => null, save: async () => {}, clear: async () => {} };
-export const MUTATIONS = ['saveProfile', 'completeOnboarding', 'updateContribution', 'createPlaylist', 'updatePlaylist', 'deletePlaylist', 'investInPlaylist', 'addMoney', 'saveGoal', 'deleteGoal', 'sendChat', 'addRecap', 'setPrefs', 'setRebalance', 'setTimezone', 'resetAccount', 'deleteEverything'] as const;
+export const MUTATIONS = ['saveProfile', 'completeOnboarding', 'updateContribution', 'createPlaylist', 'updatePlaylist', 'deletePlaylist', 'investInPlaylist', 'addMoney', 'markAllNoticesRead', 'saveGoal', 'deleteGoal', 'sendChat', 'addRecap', 'setPrefs', 'setRebalance', 'setTimezone', 'resetAccount', 'deleteEverything'] as const;
 
 export class RemoteData extends Service {
   constructor(private getToken: () => Promise<string | null>, private onUnauthorized: () => void, private fetcher: typeof fetch = (...a) => fetch(...a)) { super(nullStore); }

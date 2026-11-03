@@ -2,7 +2,8 @@
 // The real version (Supabase + server actions, see replica/architecture.md) implements the same methods,
 // so swapping it in changes no screen code.
 import type { ChatMessage, Contribution, Frequency, Goal, ModelPortfolio, Order, Playlist, Profile, State } from './types';
-import { BPS, buyBasket, deposit, emptyState, firstRun, matchPortfolio, normalizeState, runJobs, totalValueCents, valueSeries } from './engine';
+import { BPS, addNotices, buyBasket, deposit, emptyState, firstRun, markAllRead, matchPortfolio, normalizeState, runJobs, totalValueCents, valueSeries } from './engine';
+import { stockStats, type Stats } from './stats';
 import { addDays, isTradingDay, prevTradingDay, todayIn } from './calendar';
 import { INSTRUMENTS, MODELS } from './seed';
 import { priceAt, range } from './prices';
@@ -21,12 +22,13 @@ export interface DataLayer {
   updateContribution(id: string, patch: Partial<Pick<Contribution, 'amountCents' | 'status'>>): Promise<State>;
   home(): HomeView;
   series(range: '1W' | '1M' | '3M' | '1Y' | 'All'): { date: string; valueCents: number; netDepositsCents: number }[];
-  stock(ticker: string): { ticker: string; name: string; blurb: string; type: string; priceCents: number; dayChange: number; points: { date: string; close: number }[]; held: HoldingRow | null };
+  stock(ticker: string): { ticker: string; name: string; blurb: string; type: string; priceCents: number; dayChange: number; points: { date: string; close: number }[]; held: HoldingRow | null; stats: Stats | null };
   createPlaylist(p: Omit<Playlist, 'id' | 'owner'>): Promise<State>;
   updatePlaylist(id: string, p: Partial<Omit<Playlist, 'id' | 'owner'>>): Promise<State>;
   deletePlaylist(id: string): Promise<State>;
   investInPlaylist(id: string, amountCents: number): Promise<State>;
   addMoney(amountCents: number): Promise<State>;
+  markAllNoticesRead(): Promise<State>;
   saveGoal(g: Omit<Goal, 'id'> & { id?: string }): Promise<State>;
   deleteGoal(id: string): Promise<State>;
   sendChat(text: string): Promise<State>;
@@ -58,7 +60,7 @@ export class Service implements DataLayer {
   /** Hook: pick up changes made elsewhere (another tab) before changing anything. */
   protected async refresh(): Promise<void> {}
   protected async save(s: State) { await this.store.save(s); this.state = s; return s; }
-  private jobs(s: State) { return runJobs(s, this.today(), priceAt); }
+  private jobs(s: State) { const out = runJobs(s, this.today(), priceAt); return addNotices(s, out, this.today(), priceAt); }
 
   async load() {
     const s = await this.store.load();
@@ -113,7 +115,7 @@ export class Service implements DataLayer {
     const inst = INSTRUMENTS.find((i) => i.ticker === ticker); if (!inst) throw new Error('Unknown ticker');
     const asOf = prevTradingDay(this.today()); const prev = prevTradingDay(addDays(asOf, -1));
     return { ticker, name: inst.name, blurb: inst.blurb, type: inst.type, priceCents: Math.round(priceAt(ticker, asOf) * 100), dayChange: priceAt(ticker, asOf) / priceAt(ticker, prev) - 1,
-      points: range(ticker, addDays(asOf, -365), asOf), held: this.rows(asOf).find((r) => r.ticker === ticker) ?? null };
+      points: range(ticker, addDays(asOf, -365), asOf), held: this.rows(asOf).find((r) => r.ticker === ticker) ?? null, stats: stockStats(range(ticker, addDays(asOf, -365), asOf).map((p) => p.close)) };
   }
 
   async createPlaylist(p: Omit<Playlist, 'id' | 'owner'>) { await this.refresh();
@@ -137,6 +139,7 @@ export class Service implements DataLayer {
     s = buyBasket(s, amountCents, pl.items, d, priceAt, { note: pl.name });
     s.playlistInvestments.push({ playlistId: id, amountCents, date: d }); return this.save(s);
   }
+  async markAllNoticesRead() { await this.refresh(); return this.save(markAllRead(this.state)); }
   async saveGoal(g: Omit<Goal, 'id'> & { id?: string }) { await this.refresh();
     if (!g.name.trim()) throw new Error('Add a name and an amount'); if (!Number.isInteger(g.targetCents) || g.targetCents < MIN_CENTS || g.targetCents > 1e12) throw new Error('Enter a target of at least $1.00.');
     const s = clone(this.state); const ex = g.id ? s.goals.find((x) => x.id === g.id) : null;

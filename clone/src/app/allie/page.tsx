@@ -1,14 +1,17 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useApp } from '@/components/Provider';
 import { AppShell } from '@/components/Shell';
 import { Banner, Button, Empty } from '@/components/ui';
 import { DISCLAIMER, SUGGESTIONS } from '@/lib/allie';
 import { useLatch } from '@/lib/useLatch';
 
-export default function Allie() {
+function AllieInner() {
+  const ask = useSearchParams().get('ask');
   const { state, data, act } = useApp(); const once = useLatch(); const [text, setText] = useState(''); const [busy, setBusy] = useState(false); const end = useRef<HTMLDivElement>(null);
   useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [state.chat.length]);
+  useEffect(() => { if (ask) setText(ask.slice(0, 500)); }, [ask]);   // a question handed over from another screen is filled in, not sent
   const send = (t: string) => once(async () => { if (!t.trim()) return; setBusy(true); const r = await act(data.sendChat(t)); setBusy(false); if (r) setText(''); });
   return <AppShell title="Allie" action={<Button size="sm" variant="secondary" onClick={() => act(data.addRecap())}>My recap</Button>}>
     <Banner>{DISCLAIMER}</Banner>
@@ -22,3 +25,5 @@ export default function Allie() {
       <input className="input" aria-label="Ask Allie" placeholder="Ask a question" value={text} maxLength={500} onChange={(e) => setText(e.target.value)} disabled={busy} /><Button type="submit" disabled={busy || !text.trim()}>Send</Button></form>
   </AppShell>;
 }
+
+export default function Allie() { return <Suspense fallback={null}><AllieInner /></Suspense>; }
