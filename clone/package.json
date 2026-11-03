@@ -1,0 +1,41 @@
+{
+  "name": "alinea-style-clone",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private, simulated-money investing practice app (clean-room clone of an automated-investing app's feature set)",
+  "scripts": {
+    "dev": "next dev -p 3100",
+    "build": "next build",
+    "start": "next start -p 3100",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "tokens": "cd ../replica/design && python3 gen_tokens.py && cp tokens.css ../../clone/src/styles/tokens.css && cp tailwind.theme.ts ../../clone/tailwind.theme.ts",
+    "db:setup": "tsx --tsconfig tsconfig.json scripts/db-setup.ts",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "jose": "^6.2.15",
+    "next": "^15.5.28",
+    "pg": "^8.23.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@electric-sql/pglite": "^0.5.14",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.6.2",
+    "postcss": "^8.5.32",
+    "tailwindcss": "3.4",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.0"
+  }
+}

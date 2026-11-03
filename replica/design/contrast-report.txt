@@ -1,0 +1,52 @@
+== light ==
+PASS  15.58  (min 4.5)  text on bg  - body text on page
+PASS  16.74  (min 4.5)  text on surface  - body text on card
+PASS  14.45  (min 4.5)  text on surface-2  - body text on raised surface
+PASS   5.96  (min 4.5)  text-muted on bg  - secondary text on page
+PASS   6.40  (min 4.5)  text-muted on surface  - secondary text on card
+PASS   5.52  (min 4.5)  text-muted on surface-2  - secondary text on raised surface
+PASS   6.41  (min 4.5)  on-accent on accent  - primary button label
+PASS   7.94  (min 4.5)  on-accent-soft on accent-soft  - selected chip / choice card
+PASS   6.41  (min 4.5)  accent on surface  - accent text/link on card
+PASS   5.97  (min 4.5)  accent on bg  - accent text/link on page
+PASS   6.54  (min 4.5)  danger on surface  - error text on card
+PASS   5.38  (min 4.5)  danger on danger-soft  - error banner text
+PASS   6.57  (min 4.5)  success on surface  - gain text on card
+PASS   5.57  (min 4.5)  success on success-soft  - success banner text
+PASS   6.24  (min 4.5)  warning on warning-soft  - disclaimer banner text
+PASS   4.41  (min 3.0)  border-input on surface  - input border (non-text 3:1)
+PASS   4.11  (min 3.0)  border-input on bg  - input border on page (non-text 3:1)
+PASS   6.41  (min 3.0)  accent on surface  - focus ring (non-text 3:1)
+PASS   6.41  (min 3.0)  chart-1 on surface  - chart series 1
+PASS   4.67  (min 3.0)  chart-2 on surface  - chart series 2
+PASS   5.69  (min 3.0)  chart-3 on surface  - chart series 3
+PASS   6.12  (min 3.0)  chart-4 on surface  - chart series 4
+PASS   5.84  (min 3.0)  chart-5 on surface  - chart series 5
+PASS   5.05  (min 3.0)  chart-6 on surface  - chart series 6
+== dark ==
+PASS  15.96  (min 4.5)  text on bg  - body text on page
+PASS  14.60  (min 4.5)  text on surface  - body text on card
+PASS  12.89  (min 4.5)  text on surface-2  - body text on raised surface
+PASS   8.35  (min 4.5)  text-muted on bg  - secondary text on page
+PASS   7.63  (min 4.5)  text-muted on surface  - secondary text on card
+PASS   6.74  (min 4.5)  text-muted on surface-2  - secondary text on raised surface
+PASS  10.01  (min 4.5)  on-accent on accent  - primary button label
+PASS   9.84  (min 4.5)  on-accent-soft on accent-soft  - selected chip / choice card
+PASS   9.10  (min 4.5)  accent on surface  - accent text/link on card
+PASS   9.94  (min 4.5)  accent on bg  - accent text/link on page
+PASS   7.52  (min 4.5)  danger on surface  - error text on card
+PASS   6.71  (min 4.5)  danger on danger-soft  - error banner text
+PASS   9.37  (min 4.5)  success on surface  - gain text on card
+PASS   7.76  (min 4.5)  success on success-soft  - success banner text
+PASS   8.45  (min 4.5)  warning on warning-soft  - disclaimer banner text
+PASS   3.91  (min 3.0)  border-input on surface  - input border (non-text 3:1)
+PASS   4.28  (min 3.0)  border-input on bg  - input border on page (non-text 3:1)
+PASS   9.10  (min 3.0)  accent on surface  - focus ring (non-text 3:1)
+PASS   9.10  (min 3.0)  chart-1 on surface  - chart series 1
+PASS   8.04  (min 3.0)  chart-2 on surface  - chart series 2
+PASS   7.14  (min 3.0)  chart-3 on surface  - chart series 3
+PASS   7.15  (min 3.0)  chart-4 on surface  - chart series 4
+PASS   9.65  (min 3.0)  chart-5 on surface  - chart series 5
+PASS   7.27  (min 3.0)  chart-6 on surface  - chart series 6
+
+48/48 pairs pass AA, 0 fail
