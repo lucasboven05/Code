@@ -27,7 +27,7 @@ export function matchPortfolio(p: Profile, year = new Date().getFullYear(), mode
   return models.find((m) => m.riskLevel === level) ?? models[2];
 }
 
-function newId(s: State, prefix: string) { s.seq += 1; return `${prefix}${s.seq}`; }
+function newId(s: State, _prefix: string) { s.seq += 1; return globalThis.crypto.randomUUID(); }
 const holdingValue = (qty: number, price: number) => qty * price * 100;
 
 export function totalValueCents(s: State, date: string, priceAt: PriceAt): number {
@@ -58,6 +58,7 @@ export function buyBasket(state: State, amountCents: number, allocs: Alloc[], da
     const qty = Math.floor((spend / 100 / price) * 1e8) / 1e8;
     if (qty <= 0) continue;
     const cost = Math.min(spend, Math.round(qty * price * 100));
+    if (cost <= 0) continue;
     if (cost > s.account.cashCents) throw new Error('Not enough cash');
     const h = s.holdings.find((x) => x.ticker === a.ticker);
     if (h) { h.qty = Math.round((h.qty + qty) * 1e8) / 1e8; h.costBasisCents += cost; } else s.holdings.push({ ticker: a.ticker, qty, costBasisCents: cost });
@@ -126,7 +127,7 @@ export function rebalance(state: State, date: string, priceAt: PriceAt, threshol
     const over = holdingValue(h.qty, price) - target;
     if (over < 100) continue;
     const qty = Math.min(h.qty, Math.floor((over / 100 / price) * 1e8) / 1e8); if (qty <= 0) continue;
-    const proceeds = Math.round(qty * price * 100); const frac = qty / h.qty;
+    const proceeds = Math.round(qty * price * 100); if (proceeds <= 0) continue; const frac = qty / h.qty;
     h.costBasisCents = Math.round(h.costBasisCents * (1 - frac)); h.qty = Math.round((h.qty - qty) * 1e8) / 1e8;
     s.account.cashCents += proceeds; pushOrder(s, 'rebalance_sell', date, proceeds, { ticker: a.ticker, qty, price, note: 'Back toward your mix' });
   }
@@ -136,7 +137,7 @@ export function rebalance(state: State, date: string, priceAt: PriceAt, threshol
     const under = target - cur; if (under < 100) continue;
     const spend = Math.min(Math.floor(under), s.account.cashCents);
     const qty = Math.floor((spend / 100 / price) * 1e8) / 1e8; if (qty <= 0) continue;
-    const cost = Math.min(spend, Math.round(qty * price * 100));
+    const cost = Math.min(spend, Math.round(qty * price * 100)); if (cost <= 0) continue;
     const h = s.holdings.find((x) => x.ticker === a.ticker);
     if (h) { h.qty = Math.round((h.qty + qty) * 1e8) / 1e8; h.costBasisCents += cost; } else s.holdings.push({ ticker: a.ticker, qty, costBasisCents: cost });
     s.account.cashCents -= cost; pushOrder(s, 'rebalance_buy', date, cost, { ticker: a.ticker, qty, price, note: 'Back toward your mix' });

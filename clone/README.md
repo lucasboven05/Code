@@ -12,3 +12,7 @@ npm run tokens     # regenerate CSS/Tailwind tokens from ../replica/design/token
 ```
 
 Not real: brokerage, prices, news, Allie's answers (scripted). See `../replica/build-log.md` for what is done and what is partial.
+
+## Backend (optional)
+Set `NEXT_PUBLIC_BACKEND=supabase` and the variables in `.env.example`, run `npm run db:setup`, and deploy. Setup steps, security checklist and what is verified: `../replica/backend.md`.
+Tests on a real Postgres too: `TEST_DATABASE_URL=postgres://... npm test` (needs the stand-in auth schema; see `tests/backend/helpers.ts`). `node e2e/backend.cjs` runs the browser end-to-end in backend mode.

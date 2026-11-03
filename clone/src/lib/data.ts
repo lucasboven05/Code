@@ -6,7 +6,7 @@ import { BPS, buyBasket, deposit, emptyState, firstRun, matchPortfolio, runJobs,
 import { addDays, isTradingDay, prevTradingDay, todayIn } from './calendar';
 import { INSTRUMENTS, MODELS } from './seed';
 import { priceAt, range } from './prices';
-import { allieReply, weeklyRecap } from './allie';
+import { allieReply, weeklyRecap, type AllieContext } from './allie';
 
 export type HoldingRow = { ticker: string; name: string; qty: number; valueCents: number; weight: number; dayChange: number; gainCents: number };
 export type HomeView = { today: string; valueCents: number; cashCents: number; netDepositsCents: number; dayChangeCents: number; rows: HoldingRow[]; plan: ModelPortfolio | null; contributions: Contribution[]; hasHistory: boolean };
@@ -38,23 +38,27 @@ export interface DataLayer {
   deleteEverything(): Promise<State>;
 }
 
-const KEY = 'alinea-style-clone.v1';
-const rid = (s: State, p: string) => { s.seq += 1; return `${p}${s.seq}`; };
+export const LOCAL_KEY = 'alinea-style-clone.v1';
+/** Where a user's State lives. The browser uses localStorage; the server uses Postgres. */
+export interface Store { load(): Promise<State | null>; save(s: State): Promise<void>; clear(): Promise<void> }
+export type AllieFn = (question: string, ctx: AllieContext) => Promise<string>;
+const scriptedAllie: AllieFn = async (q, ctx) => allieReply(q, ctx);
+const rid = (s: State, _p: string) => { s.seq += 1; return globalThis.crypto.randomUUID(); };
 const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x));
 
-export class LocalData implements DataLayer {
+export class Service implements DataLayer {
   state: State = emptyState();
   now: () => Date;
-  constructor(now: () => Date = () => new Date()) { this.now = now; }
+  constructor(protected store: Store, now: () => Date = () => new Date(), protected allie: AllieFn = scriptedAllie) { this.now = now; }
+  protected defaultTimezone() { return 'America/Panama'; }
   today() { return todayIn(this.state.profile.timezone, this.now()); }
-  private save(s: State) { this.state = s; try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* storage may be blocked: stay in memory */ } return s; }
+  protected async save(s: State) { await this.store.save(s); this.state = s; return s; }
   private jobs(s: State) { return runJobs(s, this.today(), priceAt); }
 
   async load() {
-    let s: State | null = null;
-    try { const raw = localStorage.getItem(KEY); if (raw) { const p = JSON.parse(raw); if (p?.v === 1) s = p; } } catch { /* ignore */ }
-    this.state = s ?? emptyState(Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Panama');
-    if (this.state.profile.onboardedAt) this.save(this.jobs(this.state));
+    const s = await this.store.load();
+    this.state = s ?? emptyState(this.defaultTimezone());
+    if (this.state.profile.onboardedAt) await this.save(this.jobs(this.state));
     return this.state;
   }
   async saveProfile(patch: Partial<Profile>) { const s = clone(this.state); s.profile = { ...s.profile, ...patch }; return this.save(s); }
@@ -137,14 +141,26 @@ export class LocalData implements DataLayer {
     const t = text.trim(); if (!t) throw new Error('Type a question first');
     const s = clone(this.state); const date = this.today();
     const msg = (role: ChatMessage['role'], content: string, kind: ChatMessage['kind'] = 'chat'): ChatMessage => ({ id: rid(s, 'm'), role, content, kind, date });
-    s.chat.push(msg('user', t.slice(0, 500))); s.chat.push(msg('assistant', allieReply(t, { state: s, today: date }))); return this.save(s);
+    const q = t.slice(0, 500); const reply = await this.allie(q, { state: s, today: date });
+    s.chat.push(msg('user', q)); s.chat.push(msg('assistant', reply)); return this.save(s);
   }
   async addRecap() { const s = clone(this.state); const date = this.today(); s.chat.push({ id: rid(s, 'm'), role: 'assistant', content: weeklyRecap({ state: s, today: date }), kind: 'recap', date }); return this.save(s); }
   async setPrefs(patch: Partial<State['prefs']>) { const s = clone(this.state); s.prefs = { ...s.prefs, ...patch }; return this.save(s); }
   async setRebalance(on: boolean) { const s = clone(this.state); s.account.rebalanceEnabled = on; return this.save(s); }
   async setTimezone(tz: string) { const s = clone(this.state); s.profile.timezone = tz; return this.save(s); }
   async resetAccount() { const s = emptyState(this.state.profile.timezone); s.profile.displayName = this.state.profile.displayName; s.playlists = [...s.playlists, ...this.state.playlists.filter((p) => p.owner === 'me')]; return this.save(s); }
-  async deleteEverything() { try { localStorage.removeItem(KEY); } catch { /* ignore */ } return this.save(emptyState(this.state.profile.timezone)); }
+  async deleteEverything() { await this.store.clear(); this.state = emptyState(this.state.profile.timezone); return this.state; }
+}
+
+/** Browser-only storage (the original, offline mode). */
+export class LocalStorageStore implements Store {
+  async load() { try { const raw = localStorage.getItem(LOCAL_KEY); if (raw) { const p = JSON.parse(raw); if (p?.v === 1) return p as State; } } catch { /* ignore */ } return null; }
+  async save(s: State) { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(s)); } catch { /* storage may be blocked: stay in memory */ } }
+  async clear() { try { localStorage.removeItem(LOCAL_KEY); } catch { /* ignore */ } }
+}
+export class LocalData extends Service {
+  constructor(now: () => Date = () => new Date()) { super(new LocalStorageStore(), now); }
+  protected defaultTimezone() { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Panama'; }
 }
 
 export type { Order };

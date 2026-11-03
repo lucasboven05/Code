@@ -13,13 +13,13 @@ Share playlists / community feed,social,could,yes,partial,seen; private clone = 
 Daily Briefing (news for holdings),research,should,yes,partial,"seen | BUILD: built from simulated price moves, NOT real news"
 Goal Projections / Investing Potential,planning,must,yes,yes,"seen; hypothetical, labelled | BUILD: rate slider, monthly-needed, labelled hypothetical"
 Yearly Goals,planning,should,yes,yes,seen | BUILD: create/edit/delete
-AI Allie chat (educational),ai,must,yes,partial,seen | BUILD: scripted answers behind the real interface; no LLM yet
+AI Allie chat (educational),ai,must,yes,partial,seen | BUILD: scripted answers behind the real interface; no LLM yet | BACKEND: Claude API mode written and mock-tested (needs your key); scripted fallback always works
 AI Allie Recaps,ai,should,yes,partial,"seen | BUILD: on-demand button, scripted; not weekly/automatic"
 Crypto access (simulated prices),assets,could,yes,partial,seen; no custody | BUILD: two simulated coins list + playlist; no buy sheet of its own
 Activity / history,portfolio,should,yes,yes,inferred | BUILD: filters + paging
 Membership + billing screen,account,could,yes,partial,private use: show as informational only | BUILD: info card in Settings; no billing by design
 Notifications,account,could,yes,partial,inferred | BUILD: preferences saved; nothing is delivered
-"Settings, profile, security",account,should,yes,partial,"inferred | BUILD: profile, time zone, toggles, reset/delete. No security settings (no accounts yet)"
+"Settings, profile, security",account,should,yes,yes,"inferred | BUILD: profile, time zone, toggles, reset/delete. No security settings (no accounts yet) | BACKEND: sign-in, sign out everywhere, delete account added (needs your Supabase project to verify email sign-in)"
 Legal and disclosures pages,account,must,yes,yes,seen | BUILD: About and disclosures
 Marketing landing page + savings calculator,web,could,yes,no,seen on site | BUILD: not started
 Real brokerage and custody,regulated,skip,yes,skip,SKIP: needs licensed broker partner (DriveWealth in original)

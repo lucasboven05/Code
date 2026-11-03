@@ -45,3 +45,6 @@ Date: 2026-11-02 (one session). App lives in `clone/` (Next.js 15, React 19, Typ
 
 ## Commits
 Screens were built together in three commits (engine, app, docs) rather than one per screen.
+
+## Backend pass (2026-11-03)
+Auth, database, API, daily job and the Claude-backed Allie were added in `clone/`; see `replica/backend.md` for what is verified and what needs your accounts. Screen changes: sign-in screen, Settings sign-in card, Legal text. S16 Settings is now done. Prices are still simulated.

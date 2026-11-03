@@ -1,7 +1,8 @@
+-- SOURCE OF TRUTH: clone/supabase/migrations/0001_init.sql (this file is a copy kept for the replica/ docs).
 -- Alinea-style clone (private, simulated money). Postgres (Supabase). All times timestamptz (UTC).
 -- Money = integer cents + currency. Per-share prices and quantities are numeric (a rate, not an amount);
 -- order value is rounded to cents when a fill is booked.
-create extension if not exists pgcrypto;
+-- gen_random_uuid() is built into Postgres 13+, so no extension is needed.
 
 -- ---------- shared reference data (read by everyone, written only by service role / jobs) ----------
 create table instruments (
@@ -27,6 +28,7 @@ create index on prices (instrument_id, kind, as_of desc);
 
 create table model_portfolios (            -- SAMPLE portfolios, educational only (not advice)
   id uuid primary key default gen_random_uuid(),
+  slug text not null unique,                -- stable key used by the app ('m1'..'m5')
   name text not null unique,
   risk_level smallint not null check (risk_level between 1 and 5),
   description text not null default '',
@@ -50,7 +52,7 @@ create table profiles (                    -- one row per auth user (Supabase au
   horizon_years smallint check (horizon_years between 1 and 80),
   goals jsonb not null default '[]',        -- questionnaire answers, e.g. ["first_home","retire_early"]
   questionnaire_step smallint not null default 0,
-  onboarded_at timestamptz,
+  onboarded_on date,                        -- practice start day (may be in the past: replayed plan)
   timezone text not null default 'America/Panama',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -61,6 +63,8 @@ create table accounts (                    -- the SIMULATED brokerage account (t
   user_id uuid not null unique references auth.users(id) on delete cascade,
   model_portfolio_id uuid references model_portfolios(id) on delete set null,
   cash_cents bigint not null default 0 check (cash_cents >= 0),
+  net_deposits_cents bigint not null default 0 check (net_deposits_cents >= 0),
+  last_jobs_on date,                        -- last market day the job runner has processed
   currency text not null default 'USD',
   rebalance_enabled boolean not null default true,
   created_at timestamptz not null default now(),
@@ -108,6 +112,8 @@ create table orders (                       -- the activity log: every simulated
   price numeric(18,6) check (price > 0),
   amount_cents bigint not null check (amount_cents > 0),
   run_for date,                             -- the scheduled day this order belongs to (idempotency key with contribution_id)
+  trade_date date not null,                 -- simulated market day of the fill (can be in the past when a plan is replayed)
+  seq bigint generated always as identity,   -- insertion order (rows saved in one transaction share created_at)
   status text not null default 'filled' check (status in ('filled','failed','skipped')),
   note text not null default '',
   created_at timestamptz not null default now(),
@@ -117,8 +123,8 @@ create index on orders (user_id, created_at desc);
 create index on orders (account_id);
 create index on orders (instrument_id);
 -- a scheduled contribution can only execute once per day, even if the job runs twice
-create unique index orders_contribution_once on orders (contribution_id, run_for, kind, instrument_id)
-  where contribution_id is not null;
+create unique index orders_contribution_once on orders (contribution_id, run_for, kind, coalesce(instrument_id, '00000000-0000-0000-0000-000000000000'::uuid))
+  where contribution_id is not null;   -- coalesce: deposits have no instrument, and NULLs would otherwise never collide
 
 create table portfolio_snapshots (          -- end-of-day valuation for the performance chart
   account_id uuid not null references accounts(id) on delete cascade,
@@ -173,15 +179,16 @@ end $$;
 create constraint trigger playlist_weights_total after insert or update or delete on playlist_items
   deferrable initially deferred for each row execute function check_playlist_weights();
 
-create table playlist_investments (         -- "invest in this playlist": which playlists a user follows/invests with
+create table playlist_investments (         -- every 'invest in this playlist' action (append-only log)
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
-  playlist_id uuid not null references playlists(id) on delete cascade,
-  allocation_bps integer not null check (allocation_bps between 1 and 10000),
-  created_at timestamptz not null default now(),
-  unique (user_id, playlist_id)
+  playlist_ref text not null,                -- built-in playlists are code (slug); own playlists are uuids
+  amount_cents bigint not null check (amount_cents > 0),
+  invested_on date not null,
+  seq bigint generated always as identity,
+  created_at timestamptz not null default now()
 );
-create index on playlist_investments (playlist_id);
+create index on playlist_investments (user_id);
 
 create table briefings (
   id uuid primary key default gen_random_uuid(),
@@ -217,6 +224,8 @@ create table chat_messages (
   role text not null check (role in ('user','assistant')),
   content text not null,
   kind text not null default 'chat' check (kind in ('chat','recap')),
+  sent_on date not null default current_date,
+  seq bigint generated always as identity,
   created_at timestamptz not null default now()
 );
 create index on chat_messages (thread_id, created_at);
@@ -238,44 +247,32 @@ create table notification_prefs (
   updated_at timestamptz not null default now()
 );
 
--- ---------- row level security ----------
--- Every user-owned table: a signed-in user sees and changes only their own rows (user_id = auth.uid()).
--- Reference tables are readable by any signed-in user; they are written only by the service role (jobs).
-alter table instruments enable row level security;
-alter table prices enable row level security;
-alter table model_portfolios enable row level security;
-alter table model_portfolio_allocations enable row level security;
-create policy read_all on instruments for select to authenticated using (true);
-create policy read_all on prices for select to authenticated using (true);
-create policy read_all on model_portfolios for select to authenticated using (true);
-create policy read_all on model_portfolio_allocations for select to authenticated using (true);
-
+-- ---------- access rules ----------
+-- 1. Row level security on everything. A signed-in browser can SELECT only its own rows (user_id = auth.uid()).
+-- 2. Writes: revoked from the browser role on EVERY table. All writes go through server code that uses the
+--    service connection, after the server has verified the user's token and validated the input.
+-- 3. Reference tables (instruments, prices, model portfolios) are readable by any signed-in user.
 do $$
 declare t text;
 begin
-  foreach t in array array['profiles','accounts','holdings','contributions','orders','portfolio_snapshots','goals',
-                           'playlist_investments','briefings','chat_threads','chat_messages','memberships','notification_prefs']
-  loop
+  foreach t in array array['instruments','prices','model_portfolios','model_portfolio_allocations'] loop
     execute format('alter table %I enable row level security', t);
-    execute format('create policy own_rows on %I for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid())', t);
+    execute format('create policy read_all on %I for select to authenticated using (true)', t);
+  end loop;
+  foreach t in array array['profiles','accounts','holdings','contributions','orders','portfolio_snapshots','goals',
+                           'playlist_investments','briefings','chat_threads','chat_messages','memberships','notification_prefs'] loop
+    execute format('alter table %I enable row level security', t);
+    execute format('create policy own_rows on %I for select to authenticated using (user_id = auth.uid())', t);
   end loop;
 end $$;
 
--- money-moving tables (accounts.cash, holdings, orders, snapshots) are changed only by server code running
--- with the service role inside one transaction; the app never writes them from the browser:
-revoke insert, update, delete on accounts, holdings, orders, portfolio_snapshots from authenticated;
-
--- playlists: own + built-in + public
 alter table playlists enable row level security;
 create policy read_playlists on playlists for select to authenticated using (owner_id is null or is_public or owner_id = auth.uid());
-create policy write_own_playlists on playlists for all to authenticated using (owner_id = auth.uid()) with check (owner_id = auth.uid());
 alter table playlist_items enable row level security;
 create policy read_items on playlist_items for select to authenticated using (
   exists (select 1 from playlists p where p.id = playlist_id and (p.owner_id is null or p.is_public or p.owner_id = auth.uid())));
-create policy write_own_items on playlist_items for all to authenticated
-  using (exists (select 1 from playlists p where p.id = playlist_id and p.owner_id = auth.uid()))
-  with check (exists (select 1 from playlists p where p.id = playlist_id and p.owner_id = auth.uid()));
-
 alter table briefing_items enable row level security;
 create policy own_items on briefing_items for select to authenticated using (
   exists (select 1 from briefings b where b.id = briefing_id and b.user_id = auth.uid()));
+
+revoke insert, update, delete, truncate on all tables in schema public from authenticated;
