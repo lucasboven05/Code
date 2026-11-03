@@ -195,3 +195,20 @@ export function monthlyNeeded(targetCents: number, startCents: number, years: nu
   const base = projectValue(startCents, 0, years, annualRate); if (base >= targetCents) return 0;
   const per = projectValue(0, 100, years, annualRate); return Math.ceil(((targetCents - base) / per) * 100);
 }
+
+const isObj = (x: unknown): x is Record<string, any> => typeof x === 'object' && x !== null && !Array.isArray(x);
+/** Rebuild a State from stored JSON of any shape: keep what is valid, fill in the rest. Returns null if it is not ours at all. */
+export function normalizeState(raw: unknown, timezone = 'America/Panama'): State | null {
+  if (!isObj(raw) || raw.v !== 1) return null;
+  const base = emptyState(typeof (raw.profile as any)?.timezone === 'string' ? (raw.profile as any).timezone : timezone);
+  const arr = <T,>(x: unknown): T[] => (Array.isArray(x) ? (x as T[]).filter((i) => isObj(i)) : []);
+  const own = arr<State['playlists'][number]>(raw.playlists).filter((p) => p.owner === 'me' && typeof p.id === 'string' && Array.isArray(p.items));
+  return {
+    ...base,
+    profile: { ...base.profile, ...(isObj(raw.profile) ? raw.profile : {}) } as State['profile'],
+    account: { ...base.account, ...(isObj(raw.account) ? raw.account : {}) } as State['account'],
+    prefs: { ...base.prefs, ...(isObj(raw.prefs) ? raw.prefs : {}) } as State['prefs'],
+    holdings: arr(raw.holdings), contributions: arr(raw.contributions), orders: arr(raw.orders), goals: arr(raw.goals), chat: arr(raw.chat), playlistInvestments: arr(raw.playlistInvestments),
+    playlists: [...base.playlists, ...own], lastJobsOn: typeof raw.lastJobsOn === 'string' ? raw.lastJobsOn : null, seq: typeof raw.seq === 'number' ? raw.seq : 0,
+  };
+}

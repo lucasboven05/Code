@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useApp } from './Provider';
 import { Skeleton } from './ui';
+import { canGoBack, noteNav } from '@/lib/nav';
 
 const TABS = [
   { href: '/home', label: 'Home', d: 'M4 11l8-7 8 7v9H4z' },
@@ -15,10 +16,11 @@ export function AppShell({ title, back, action, children }: { title: string; bac
   const { state, ready } = useApp(); const path = usePathname(); const router = useRouter();
   const onboarded = !!state.profile.onboardedAt;
   useEffect(() => { if (ready && !onboarded) router.replace('/welcome'); }, [ready, onboarded, router]);
+  useEffect(() => { noteNav(); }, [path]);
   const section = '/' + path.split('/')[1];
   return <>
     <header className="topbar"><div className="topbar-in">
-      <div className="row">{back && <Link href={back} className="btn btn-ghost btn-sm" aria-label="Back">←</Link>}<h1 className="h2">{title}</h1></div>
+      <div className="row">{back && <Link href={back} className="btn btn-ghost btn-sm" aria-label="Back" onClick={(e) => { if (canGoBack()) { e.preventDefault(); router.back(); } }}>←</Link>}<h1 className="h2">{title}</h1></div>
       <div className="row">{action}<Link href="/settings" className="btn btn-ghost btn-sm" aria-label="Settings">Settings</Link></div></div></header>
     <main className="page">{ready && onboarded ? children : <Skeleton lines={4} />}</main>
     <nav className="tabbar" aria-label="Main"><div className="tabbar-in">

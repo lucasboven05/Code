@@ -4,11 +4,12 @@ import { useApp } from '@/components/Provider';
 import { AppShell } from '@/components/Shell';
 import { Banner, Button, Empty } from '@/components/ui';
 import { DISCLAIMER, SUGGESTIONS } from '@/lib/allie';
+import { useLatch } from '@/lib/useLatch';
 
 export default function Allie() {
-  const { state, data, act } = useApp(); const [text, setText] = useState(''); const [busy, setBusy] = useState(false); const end = useRef<HTMLDivElement>(null);
+  const { state, data, act } = useApp(); const once = useLatch(); const [text, setText] = useState(''); const [busy, setBusy] = useState(false); const end = useRef<HTMLDivElement>(null);
   useEffect(() => { end.current?.scrollIntoView({ block: 'end' }); }, [state.chat.length]);
-  async function send(t: string) { if (!t.trim() || busy) return; setBusy(true); const r = await act(data.sendChat(t)); setBusy(false); if (r) setText(''); }
+  const send = (t: string) => once(async () => { if (!t.trim()) return; setBusy(true); const r = await act(data.sendChat(t)); setBusy(false); if (r) setText(''); });
   return <AppShell title="Allie" action={<Button size="sm" variant="secondary" onClick={() => act(data.addRecap())}>My recap</Button>}>
     <Banner>{DISCLAIMER}</Banner>
     <div className="flex flex-col gap-2" role="log" aria-live="polite" aria-label="Conversation with Allie">

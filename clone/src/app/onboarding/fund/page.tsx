@@ -7,16 +7,18 @@ import { PlainPage } from '@/components/Shell';
 import { toCents, usd } from '@/lib/format';
 import type { Frequency } from '@/lib/types';
 import type { PracticeStart } from '@/lib/data';
+import { useLatch } from '@/lib/useLatch';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 export default function Fund() {
   const { state, data, act, ready } = useApp(); const router = useRouter();
   const [amount, setAmount] = useState('50'); const [freq, setFreq] = useState<Frequency>('monthly'); const [dow, setDow] = useState(1); const [dom, setDom] = useState(1);
-  const [start, setStart] = useState<PracticeStart>('6m'); const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
-  useEffect(() => { if (ready && state.profile.riskTolerance == null) router.replace('/onboarding'); }, [ready, state.profile.riskTolerance, router]);
+  const once = useLatch(); const [start, setStart] = useState<PracticeStart>('6m'); const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
+  useEffect(() => { if (ready && state.profile.onboardedAt) router.replace('/home'); else if (ready && state.profile.riskTolerance == null) router.replace('/onboarding'); }, [ready, state.profile.riskTolerance, state.profile.onboardedAt, router]);
   if (!ready) return <PlainPage><Skeleton lines={5} /></PlainPage>;
   const m = data.matchedPortfolio();
-  async function go() {
+  const go = () => once(submit);
+  async function submit() {
     const c = toCents(amount); if (c == null || c < 100) return setErr('Enter an amount of at least $1.00.'); if (c > 10_000_000) return setErr('Practice amounts are capped at $100,000.');
     setErr(null); setBusy(true);
     const r = await act(data.completeOnboarding({ amountCents: c, frequency: freq, dayOfWeek: freq === 'weekly' || freq === 'biweekly' ? dow : null, dayOfMonth: freq === 'monthly' ? dom : null, start })); setBusy(false);

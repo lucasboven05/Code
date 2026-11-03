@@ -9,11 +9,12 @@ import { AmountField, Banner, Button, Empty, Sheet } from '@/components/ui';
 import { INSTRUMENTS } from '@/lib/seed';
 import { priceAt } from '@/lib/prices';
 import { addDays, isTradingDay, prevTradingDay } from '@/lib/calendar';
-import { toCents } from '@/lib/format';
+import { parseMoney } from '@/lib/format';
+import { useLatch } from '@/lib/useLatch';
 
 export default function PlaylistDetail() {
   const { id } = useParams<{ id: string }>(); const { state, data, act } = useApp(); const router = useRouter();
-  const [open, setOpen] = useState(false); const [amt, setAmt] = useState('25'); const [err, setErr] = useState<string | null>(null); const [armed, setArmed] = useState(false); const [busy, setBusy] = useState(false);
+  const once = useLatch(); const [open, setOpen] = useState(false); const [amt, setAmt] = useState('25'); const [err, setErr] = useState<string | null>(null); const [armed, setArmed] = useState(false); const [busy, setBusy] = useState(false);
   const p = state.playlists.find((x) => x.id === id);
   const points = useMemo(() => {
     if (!p) return []; const end = prevTradingDay(data.today()); const start = prevTradingDay(addDays(end, -91)); const out: { date: string; v: number }[] = [];
@@ -21,9 +22,10 @@ export default function PlaylistDetail() {
     return out;
   }, [p, data]);
   if (!p) return <AppShell title="Not found" back="/playlists"><Empty title="That playlist is gone" text="It may have been deleted." action={<Link className="btn btn-primary" href="/playlists">All playlists</Link>} /></AppShell>;
-  async function invest() {
-    const c = toCents(amt); if (c == null) return setErr('Enter an amount above zero.'); setErr(null); setBusy(true);
-    const r = await act(data.investInPlaylist(p!.id, c), 'Invested in ' + p!.name + '.'); setBusy(false); if (r) { setOpen(false); router.push('/home'); }
+  const invest = () => once(investNow);
+  async function investNow() {
+    const m = parseMoney(amt); if (!m.ok) return setErr(m.error); const c = m.cents; setErr(null); setBusy(true);
+    const r = await act(data.investInPlaylist(p!.id, c), 'Invested in ' + p!.name + '.'); setBusy(false); if (r) router.push('/home');
   }
   return <AppShell title={p.name} back="/playlists">
     <section className="card"><span className="chip" style={{ alignSelf: 'flex-start' }}>{p.theme || 'Custom'}</span><p style={{ margin: 0 }}>{p.description || 'Your own mix.'}</p>

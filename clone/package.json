@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "tokens": "cd ../replica/design && python3 gen_tokens.py && cp tokens.css ../../clone/src/styles/tokens.css && cp tailwind.theme.ts ../../clone/tailwind.theme.ts",
-    "db:setup": "tsx --tsconfig tsconfig.json scripts/db-setup.ts"
+    "db:setup": "tsx --tsconfig tsconfig.json scripts/db-setup.ts",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",
@@ -23,7 +24,9 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@electric-sql/pglite": "^0.5.14",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.20.5",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",

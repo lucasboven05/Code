@@ -10,7 +10,7 @@ import { INSTRUMENTS } from '@/lib/seed';
 const LABEL = ['', 'very calm', 'calm', 'balanced', 'growth-minded', 'growth-first'];
 export default function Matched() {
   const { state, data, ready } = useApp(); const router = useRouter();
-  useEffect(() => { if (ready && state.profile.riskTolerance == null) router.replace('/onboarding'); }, [ready, state.profile.riskTolerance, router]);
+  useEffect(() => { if (ready && state.profile.onboardedAt) router.replace('/home'); else if (ready && state.profile.riskTolerance == null) router.replace('/onboarding'); }, [ready, state.profile.riskTolerance, state.profile.onboardedAt, router]);
   if (!ready || state.profile.riskTolerance == null) return <PlainPage><Skeleton lines={5} /></PlainPage>;
   const m = data.matchedPortfolio(); const p = state.profile;
   return <PlainPage back="/onboarding">

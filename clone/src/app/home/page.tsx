@@ -5,19 +5,21 @@ import { useApp } from '@/components/Provider';
 import { AppShell } from '@/components/Shell';
 import { LineChart } from '@/components/charts';
 import { AmountField, Banner, Button, Empty, Segmented, Sheet } from '@/components/ui';
-import { dateFmt, pct, toCents, usd } from '@/lib/format';
+import { dateFmt, parseMoney, pct, usd } from '@/lib/format';
 import { INSTRUMENTS } from '@/lib/seed';
+import { useLatch } from '@/lib/useLatch';
 
 type R = '1W' | '1M' | '3M' | '1Y' | 'All';
 export default function Home() {
   const { state, data, act } = useApp(); const [range, setRange] = useState<R>('3M'); const [sheet, setSheet] = useState<null | 'add' | 'amount'>(null);
-  const [amt, setAmt] = useState(''); const [err, setErr] = useState<string | null>(null);
+  const once = useLatch(); const [amt, setAmt] = useState(''); const [err, setErr] = useState<string | null>(null);
   const v = useMemo(() => (state.profile.onboardedAt ? data.home() : null), [state, data]);
   const series = useMemo(() => (state.profile.onboardedAt ? data.series(range) : []), [state, data, range]);
   if (!v) return <AppShell title="Home"><div /></AppShell>;
   const c = v.contributions.find((x) => x.status !== 'cancelled'); const gain = v.valueCents - v.netDepositsCents;
-  async function submit() {
-    const cents = toCents(amt); if (cents == null) return setErr('Enter an amount above zero.'); setErr(null);
+  const submit = () => once(submitNow);
+  async function submitNow() {
+    const m = parseMoney(amt); if (!m.ok) return setErr(m.error); const cents = m.cents; setErr(null);
     const r = sheet === 'add' ? await act(data.addMoney(cents), 'Added practice cash.') : c ? await act(data.updateContribution(c.id, { amountCents: cents }), 'Plan updated.') : null;
     if (r) { setSheet(null); setAmt(''); }
   }

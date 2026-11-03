@@ -7,15 +7,17 @@ import { AmountField, Banner, Button, Empty, Sheet, TextField } from '@/componen
 import { monthlyNeeded, projectionSeries } from '@/lib/engine';
 import { toCents, usd } from '@/lib/format';
 import type { Goal } from '@/lib/types';
+import { useLatch } from '@/lib/useLatch';
 
 const monthly = (s: ReturnType<typeof useApp>['state']) => s.contributions.filter((c) => c.status === 'active').reduce((t, c) => t + (c.frequency === 'monthly' ? c.amountCents : c.frequency === 'weekly' ? (c.amountCents * 52) / 12 : c.frequency === 'biweekly' ? (c.amountCents * 26) / 12 : 0), 0);
 export default function Goals() {
   const { state, data, act } = useApp(); const year = new Date().getFullYear();
-  const [rate, setRate] = useState(5); const [edit, setEdit] = useState<Partial<Goal> | null>(null); const [amt, setAmt] = useState(''); const [errs, setErrs] = useState<{ name?: string; amt?: string; year?: string }>({});
+  const once = useLatch(); const [rate, setRate] = useState(5); const [edit, setEdit] = useState<Partial<Goal> | null>(null); const [amt, setAmt] = useState(''); const [errs, setErrs] = useState<{ name?: string; amt?: string; year?: string }>({});
   const home = useMemo(() => (state.profile.onboardedAt ? data.home() : null), [state, data]); const start = home?.valueCents ?? 0; const perMonth = Math.round(monthly(state));
-  async function save() {
+  const save = () => once(saveNow);
+  async function saveNow() {
     const c = toCents(amt); const y = Number(edit?.targetYear); const e: typeof errs = {};
-    if (!edit?.name?.trim()) e.name = 'Give your goal a name.'; if (c == null) e.amt = 'Enter an amount above zero.'; if (!Number.isInteger(y) || y <= year || y > year + 60) e.year = `Pick a year between ${year + 1} and ${year + 60}.`;
+    if (!edit?.name?.trim()) e.name = 'Give your goal a name.'; if (c == null) e.amt = 'Enter an amount above zero.'; else if (c < 100) e.amt = 'Enter a target of at least $1.00.'; if (!Number.isInteger(y) || y <= year || y > year + 60) e.year = `Pick a year between ${year + 1} and ${year + 60}.`;
     setErrs(e); if (Object.keys(e).length) return;
     const r = await act(data.saveGoal({ id: edit?.id, name: edit!.name!, targetCents: c!, targetYear: y }), 'Goal saved.'); if (r) setEdit(null);
   }

@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { LocalData, type Service } from '@/lib/data';
+import { LOCAL_KEY, LocalData, type Service } from '@/lib/data';
 import { RemoteData } from '@/lib/remote';
 import { BACKEND_ON, accessToken, getSupabase, signOut } from '@/lib/supabase';
 import { SignIn } from './SignIn';
@@ -34,6 +34,11 @@ export function Provider({ children }: { children: React.ReactNode }) {
     let live = true; data.load().then((s) => { if (live) { setState(s); setReady(true); } }).catch((e) => { if (live) { setReady(true); toast(e instanceof Error ? e.message : 'Could not load your data.', true); } });
     return () => { live = false; };
   }, [auth, data, toast]);
+  useEffect(() => {
+    if (BACKEND_ON) return;
+    const onStorage = (e: StorageEvent) => { if (e.key === LOCAL_KEY) (data as LocalData).reloadFromStore().then((s) => setState({ ...s })); };
+    window.addEventListener('storage', onStorage); return () => window.removeEventListener('storage', onStorage);
+  }, [data]);
   const act = useCallback(async <T,>(p: Promise<T>, ok?: string) => {
     try { const r = await p; if (r && typeof r === 'object' && 'v' in (r as object)) setState(r as unknown as State); if (ok) toast(ok); return r; }
     catch (e) { toast(e instanceof Error ? e.message : 'Something went wrong', true); return null; }
