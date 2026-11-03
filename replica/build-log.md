@@ -48,3 +48,6 @@ Screens were built together in three commits (engine, app, docs) rather than one
 
 ## Backend pass (2026-11-03)
 Auth, database, API, daily job and the Claude-backed Allie were added in `clone/`; see `replica/backend.md` for what is verified and what needs your accounts. Screen changes: sign-in screen, Settings sign-in card, Legal text. S16 Settings is now done. Prices are still simulated.
+
+## Test pass (2026-11-03)
+79 browser tests plus 93 unit/server tests; 15 bugs found and fixed (`replica/bugs.md`). Main fixes: a double-click made two plans, two browser tabs overwrote each other, partial stored data broke Home, long names widened the page, errors hid behind sheets, and the data layer now enforces the same limits as the server.
